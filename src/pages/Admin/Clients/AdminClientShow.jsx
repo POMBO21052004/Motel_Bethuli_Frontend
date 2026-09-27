@@ -38,7 +38,6 @@ function InfoRow({ icon, label, value }) {
 const STATUS_STYLES = {
     pending:   { bg: 'bg-amber-100',  text: 'text-amber-700',  label: 'En attente' },
     confirmed: { bg: 'bg-blue-100',   text: 'text-blue-700',   label: 'Confirmée' },
-    completed: { bg: 'bg-green-100',  text: 'text-green-700',  label: 'Terminée' },
     cancelled: { bg: 'bg-red-100',    text: 'text-red-700',    label: 'Annulée' },
 };
 
@@ -201,7 +200,7 @@ export default function AdminClientShow() {
     const isSelf = user && user.id === client.id;
     
     const totalDepense = reservations
-        .filter(r => ['confirmed', 'completed'].includes(r.status))
+        .filter(r => r.status === 'confirmed')
         .reduce((acc, r) => acc + parseFloat(r.total_price || 0), 0);
 
     return (
@@ -356,7 +355,7 @@ export default function AdminClientShow() {
                         {[
                             { label: 'Total réserv.', value: reservations.length, icon: <BedDouble className="w-5 h-5" />, color: T.primary },
                             { label: 'Confirmées', value: reservations.filter(r => r.status === 'confirmed').length, icon: <ShieldCheck className="w-5 h-5" />, color: '#3b82f6' },
-                            { label: 'Terminées', value: reservations.filter(r => r.status === 'completed').length, icon: <CheckCircle2 className="w-5 h-5" />, color: '#22c55e' },
+                            { label: 'Annulées', value: reservations.filter(r => r.status === 'cancelled').length, icon: <XCircle className="w-5 h-5" />, color: '#ef4444' },
                             { label: 'Dépenses', value: `${totalDepense.toLocaleString('fr-FR')} FCFA`, icon: <CreditCard className="w-5 h-5" />, color: '#8b5cf6', small: true },
                         ].map(s => (
                             <div key={s.label} className="bg-white rounded-2xl border p-4 shadow-sm" style={{ borderColor: `${T.outlineVariant}50` }}>
@@ -407,7 +406,8 @@ export default function AdminClientShow() {
                                                 <div className="flex items-center gap-1.5">
                                                     <Calendar className="w-3.5 h-3.5" style={{ color: T.outline }} />
                                                     <span className="text-xs font-medium" style={{ color: T.onSurfaceVariant }}>
-                                                        {r.reservation_date ? new Date(r.reservation_date).toLocaleDateString('fr-FR') : '—'}
+                                                        {r.reservation_date ? `Du ${new Date(r.reservation_date).toLocaleDateString('fr-FR')}` : '—'} 
+                                                        {r.end_date && r.end_date !== r.reservation_date ? ` au ${new Date(r.end_date).toLocaleDateString('fr-FR')}` : ''}
                                                     </span>
                                                 </div>
                                                 {(r.start_time || r.end_time) && (

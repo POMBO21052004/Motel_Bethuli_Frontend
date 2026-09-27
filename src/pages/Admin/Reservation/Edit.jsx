@@ -34,6 +34,7 @@ export default function ReservationEdit() {
         room_id: '',
         client_id: '',
         reservation_date: '',
+        end_date: '',
         start_time: '',
         end_time: '',
         total_price: '',
@@ -56,6 +57,7 @@ export default function ReservationEdit() {
                     room_id: reservation.room_id,
                     client_id: reservation.client_id,
                     reservation_date: reservation.reservation_date.split('T')[0],
+                    end_date: reservation.end_date ? reservation.end_date.split('T')[0] : reservation.reservation_date.split('T')[0],
                     start_time: reservation.start_time.slice(0, 5),
                     end_time: reservation.end_time.slice(0, 5),
                     total_price: reservation.total_price,
@@ -95,8 +97,8 @@ export default function ReservationEdit() {
 
     // Check availability via backend — exclude current reservation from conflict check
     useEffect(() => {
-        const { room_id, reservation_date, start_time, end_time } = formData;
-        if (!room_id || !reservation_date || !start_time || !end_time || loading) {
+        const { room_id, reservation_date, end_date, start_time, end_time } = formData;
+        if (!room_id || !reservation_date || !end_date || !start_time || !end_time || loading) {
             setAvailabilityMsg(null);
             return;
         }
@@ -108,9 +110,10 @@ export default function ReservationEdit() {
                 const response = await adminService.checkAvailability({
                     room_id,
                     reservation_date,
+                    end_date: formData.end_date,
                     start_time,
                     end_time,
-                    exclude_id: id, // ← exclude current reservation so same slot is always valid
+                    exclude_id: id,
                 });
                 if (cancelled) return;
                 const data = response.data;
@@ -119,9 +122,9 @@ export default function ReservationEdit() {
                 } else {
                     setAvailabilityMsg({
                         type: 'error',
-                        text: data.room_status
-                            ? data.message
-                            : `Chambre occupée par ${data.occupied_by} de ${data.from} à ${data.until}.`,
+                        text: data.occupied_by
+                            ? `${data.message} (Par ${data.occupied_by} du ${data.from} au ${data.until})`
+                            : data.message || 'La chambre n\'est pas disponible.',
                     });
                 }
             } catch (err) {
@@ -132,7 +135,7 @@ export default function ReservationEdit() {
         }, 500);
 
         return () => { cancelled = true; clearTimeout(delay); };
-    }, [formData.room_id, formData.reservation_date, formData.start_time, formData.end_time, loading]);
+    }, [formData.room_id, formData.reservation_date, formData.end_date, formData.start_time, formData.end_time, loading]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -141,7 +144,7 @@ export default function ReservationEdit() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (availabilityMsg?.type === 'error' && !['cancelled', 'completed'].includes(formData.status)) {
+        if (availabilityMsg?.type === 'error' && formData.status !== 'cancelled') {
             toast.error('Veuillez choisir un autre créneau ou une autre chambre.');
             return;
         }
@@ -240,15 +243,6 @@ export default function ReservationEdit() {
                                             ))}
                                         </optgroup>
                                     )}
-                                    {rooms.filter(r => r.status === 'occupied').length > 0 && (
-                                        <optgroup label="🔴 Occupées (non réservables)">
-                                            {rooms.filter(r => r.status === 'occupied').map(r => (
-                                                <option key={r.id} value={r.id} disabled style={{ color: '#ef4444' }}>
-                                                    {r.name} — {r.floor === 0 ? 'RDC' : `Étage ${r.floor}`} [OCCUPÉE]
-                                                </option>
-                                            ))}
-                                        </optgroup>
-                                    )}
                                     {rooms.filter(r => r.status === 'maintenance').length > 0 && (
                                         <optgroup label="🔧 En maintenance (non réservables)">
                                             {rooms.filter(r => r.status === 'maintenance').map(r => (
@@ -266,34 +260,48 @@ export default function ReservationEdit() {
                                         <div>
                                             <p className="text-sm font-bold">Chambre non disponible</p>
                                             <p className="text-xs mt-0.5">
-                                                Cette chambre est {selectedRoomDetails.status === 'occupied' ? 'actuellement occupée' : 'en maintenance'}. Veuillez en sélectionner une autre.
+                                                Cette chambre est en maintenance. Veuillez en sélectionner une autre.
                                             </p>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Date */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-700">Date <span className="text-red-500">*</span></label>
-                                <input
-                                    type="date"
-                                    name="reservation_date"
-                                    value={formData.reservation_date}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
-                                />
-                            </div>
-
-                            {/* Heures */}
+                            {/* Date et Heure Début */}
                             <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-700">Date Début <span className="text-red-500">*</span></label>
+                                    <input
+                                        type="date"
+                                        name="reservation_date"
+                                        value={formData.reservation_date}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                                    />
+                                </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-slate-700">Heure Début <span className="text-red-500">*</span></label>
                                     <input
                                         type="time"
                                         name="start_time"
                                         value={formData.start_time}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:border-amber-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Date et Heure Fin */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-700">Date Fin <span className="text-red-500">*</span></label>
+                                    <input
+                                        type="date"
+                                        name="end_date"
+                                        min={formData.reservation_date}
+                                        value={formData.end_date}
                                         onChange={handleInputChange}
                                         required
                                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:border-amber-500 outline-none transition-all"
@@ -360,7 +368,6 @@ export default function ReservationEdit() {
                                 >
                                     <option value={ReservationStatus.PENDING}>En attente</option>
                                     <option value={ReservationStatus.CONFIRMED}>Confirmée</option>
-                                    <option value={ReservationStatus.COMPLETED}>Terminée</option>
                                     <option value={ReservationStatus.CANCELLED}>Annulée</option>
                                 </select>
                             </div>
@@ -407,7 +414,7 @@ export default function ReservationEdit() {
                                 disabled={
                                     isSubmitting ||
                                     checkingAvailability ||
-                                    (availabilityMsg?.type === 'error' && !['cancelled', 'completed'].includes(formData.status)) ||
+                                    (availabilityMsg?.type === 'error' && formData.status !== 'cancelled') ||
                                     (selectedRoomDetails && selectedRoomDetails.status !== 'available')
                                 }
                                 className="px-6 py-3 rounded-xl text-sm font-bold text-white shadow-lg disabled:opacity-50 hover:opacity-90 active:scale-95 transition-all flex items-center gap-2"

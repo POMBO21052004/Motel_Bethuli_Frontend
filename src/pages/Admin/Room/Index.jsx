@@ -123,7 +123,6 @@ export default function RoomIndex() {
                             {[
                                 { label: 'Total', value: stats.total, color: '#f8fafc' },
                                 { label: 'Libres', value: stats.available, color: '#4ade80' },
-                                { label: 'Occupées', value: stats.occupied, color: '#f87171' },
                             ].map((s, i) => (
                                 <React.Fragment key={s.label}>
                                     {i > 0 && <div className="w-px h-10 opacity-20 bg-white" />}
@@ -155,7 +154,6 @@ export default function RoomIndex() {
                             style={{ color: T.onSurface }}>
                             <option value="all">Toutes les chambres</option>
                             <option value={RoomStatus.AVAILABLE}>Disponibles</option>
-                            <option value={RoomStatus.OCCUPIED}>Occupées</option>
                             <option value={RoomStatus.MAINTENANCE}>En Maintenance</option>
                         </select>
                     </div>

@@ -135,9 +135,9 @@ export default function ReservationShow() {
                         </div>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Date</p>
-                                <p className="text-lg font-black text-slate-800">{new Date(reservation.reservation_date).toLocaleDateString('fr-FR')}</p>
+                            <div className="sm:col-span-2">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Période</p>
+                                <p className="text-lg font-black text-slate-800">Du {new Date(reservation.reservation_date).toLocaleDateString('fr-FR')} au {new Date(reservation.end_date || reservation.reservation_date).toLocaleDateString('fr-FR')}</p>
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Heure de début</p>

@@ -6,7 +6,6 @@ import { getImageUrl } from '../../../utils/getImageUrl';
 
 const STATUS_CONFIG = {
     available:   { label: 'Disponible',   cls: 'bg-green-500/90 text-white' },
-    occupied:    { label: 'Occupée',       cls: 'bg-red-500/90 text-white' },
     maintenance: { label: 'Maintenance',   cls: 'bg-amber-500/90 text-white' },
 };
 

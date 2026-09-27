@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Globe, Menu, X, UserCircle, UserPlus, LayoutDashboard, LogOut } from 'lucide-react';
+import { Globe, Menu, X, UserCircle, UserPlus, LayoutDashboard, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
@@ -10,6 +11,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
 
   const isFr = i18n.language.startsWith('fr');
 
@@ -143,6 +145,13 @@ const Navbar = () => {
             {/* Desktop Right Actions */}
             <div className="hidden sm:flex sm:items-center gap-3">
               <button
+                  onClick={toggleTheme}
+                  className="flex items-center space-x-1 text-gray-500 hover:text-amber-500 transition-colors px-2 py-1 rounded-md hover:bg-amber-50"
+                  title={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+              >
+                  {isDark ? <Sun className="h-4 w-4 text-amber-500" /> : <Moon className="h-4 w-4" />}
+              </button>
+              <button
                 onClick={toggleLanguage}
                 className="flex items-center space-x-1 text-gray-500 hover:text-amber-500 transition-colors px-2 py-1 rounded-md hover:bg-amber-50"
               >
@@ -232,6 +241,13 @@ const Navbar = () => {
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-gray-100 space-y-3">
+          <button
+            onClick={toggleTheme}
+            className="flex items-center space-x-2 text-slate-700 hover:text-amber-500 transition-colors w-full px-3 py-2.5 rounded-md hover:bg-amber-50 font-medium"
+          >
+            {isDark ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5" />}
+            <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
+          </button>
           <button
             onClick={toggleLanguage}
             className="flex items-center space-x-2 text-slate-700 hover:text-amber-500 transition-colors w-full px-3 py-2.5 rounded-md hover:bg-amber-50 font-medium"

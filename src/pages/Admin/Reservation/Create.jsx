@@ -26,8 +26,9 @@ export default function ReservationCreate() {
         room_id: '',
         client_id: '',
         reservation_date: new Date().toISOString().split('T')[0],
+        end_date: new Date().toISOString().split('T')[0],
         start_time: '12:00',
-        end_time: '14:00',
+        end_time: '12:00',
         total_price: '',
         notes: '',
     });
@@ -72,8 +73,8 @@ export default function ReservationCreate() {
 
     // Check Availability via BACKEND — triggered on date/time/room changes
     useEffect(() => {
-        const { room_id, reservation_date, start_time, end_time } = formData;
-        if (!room_id || !reservation_date || !start_time || !end_time) {
+        const { room_id, reservation_date, end_date, start_time, end_time } = formData;
+        if (!room_id || !reservation_date || !end_date || !start_time || !end_time) {
             setAvailabilityMsg(null);
             return;
         }
@@ -85,6 +86,7 @@ export default function ReservationCreate() {
                 const response = await adminService.checkAvailability({
                     room_id,
                     reservation_date,
+                    end_date: formData.end_date,
                     start_time,
                     end_time,
                 });
@@ -95,7 +97,9 @@ export default function ReservationCreate() {
                 } else {
                     setAvailabilityMsg({
                         type: 'error',
-                        text: `Chambre occupée par ${data.occupied_by} de ${data.from} à ${data.until}.`,
+                        text: data.occupied_by 
+                            ? `${data.message} (Par ${data.occupied_by} du ${data.from} au ${data.until})`
+                            : data.message || 'La chambre n\'est pas disponible.',
                     });
                 }
             } catch (err) {
@@ -106,7 +110,7 @@ export default function ReservationCreate() {
         }, 500); // 500ms debounce
 
         return () => { cancelled = true; clearTimeout(delay); };
-    }, [formData.room_id, formData.reservation_date, formData.start_time, formData.end_time]);
+    }, [formData.room_id, formData.reservation_date, formData.end_date, formData.start_time, formData.end_time]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -232,15 +236,6 @@ export default function ReservationCreate() {
                                             ))}
                                         </optgroup>
                                     )}
-                                    {rooms.filter(r => r.status === 'occupied').length > 0 && (
-                                        <optgroup label="🔴 Occupées (non réservables)">
-                                            {rooms.filter(r => r.status === 'occupied').map(r => (
-                                                <option key={r.id} value={r.id} disabled style={{ color: '#ef4444' }}>
-                                                    {r.name} — {r.floor === 0 ? 'RDC' : `Étage ${r.floor}`} [OCCUPÉE]
-                                                </option>
-                                            ))}
-                                        </optgroup>
-                                    )}
                                     {rooms.filter(r => r.status === 'maintenance').length > 0 && (
                                         <optgroup label="🔧 En maintenance (non réservables)">
                                             {rooms.filter(r => r.status === 'maintenance').map(r => (
@@ -259,32 +254,48 @@ export default function ReservationCreate() {
                                         <div>
                                             <p className="text-sm font-bold">Chambre non disponible</p>
                                             <p className="text-xs mt-0.5">
-                                                Cette chambre est {selectedRoomDetails.status === 'occupied' ? 'actuellement occupée' : 'en maintenance'}. Veuillez en sélectionner une autre.
+                                                Cette chambre est en maintenance. Veuillez en sélectionner une autre.
                                             </p>
                                         </div>
                                     </div>
                                 )}
                             </div>{/* end md:col-span-2 */}
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-700">Date <span className="text-red-500">*</span></label>
-                                <input 
-                                    type="date"
-                                    name="reservation_date"
-                                    value={formData.reservation_date}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
-                                />
-                            </div>
-
+                            {/* Début */}
                             <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-700">Date Début <span className="text-red-500">*</span></label>
+                                    <input 
+                                        type="date"
+                                        name="reservation_date"
+                                        value={formData.reservation_date}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                                    />
+                                </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-slate-700">Heure Début <span className="text-red-500">*</span></label>
                                     <input 
                                         type="time"
                                         name="start_time"
                                         value={formData.start_time}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:border-amber-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Fin */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-700">Date Fin <span className="text-red-500">*</span></label>
+                                    <input 
+                                        type="date"
+                                        name="end_date"
+                                        min={formData.reservation_date}
+                                        value={formData.end_date}
                                         onChange={handleInputChange}
                                         required
                                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:border-amber-500 outline-none transition-all"

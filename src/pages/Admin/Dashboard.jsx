@@ -7,6 +7,7 @@ import {
 import adminService from '../../services/adminService';
 import { getGreeting } from '../../utils/dateHelpers';
 import { useAuth } from '../../contexts/AuthContext';
+import { getImageUrl } from '../../utils/getImageUrl';
 
 const T = {
     bg: '#f8fafc', cardBg: '#ffffff', primary: '#f59e0b',
@@ -304,7 +305,7 @@ export default function AdminDashboard() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 {res.client?.profil ? (
-                                                    <img src={res.client.profil} alt="Avatar" className="w-10 h-10 rounded-full object-cover border border-slate-200 bg-white" />
+                                                    <img src={getImageUrl(res.client.profil)} alt="Avatar" className="w-10 h-10 rounded-full object-cover border border-slate-200 bg-white" />
                                                 ) : (
                                                     <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center border border-slate-200">
                                                         <UserIcon className="w-5 h-5" />
@@ -319,7 +320,7 @@ export default function AdminDashboard() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 {res.room?.primary_image?.image_path ? (
-                                                    <img src={res.room.primary_image.image_path} alt={res.room?.name} className="w-12 h-8 rounded object-cover shadow-sm" />
+                                                    <img src={getImageUrl(res.room.primary_image.image_path)} alt={res.room?.name} className="w-12 h-8 rounded object-cover shadow-sm" />
                                                 ) : (
                                                     <div className="w-12 h-8 rounded bg-slate-100 text-slate-400 flex items-center justify-center shadow-sm">
                                                         <BedDouble className="w-4 h-4" />
@@ -334,11 +335,11 @@ export default function AdminDashboard() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <p className="text-slate-800 font-medium">
-                                                Du {new Date(res.start_time).toLocaleDateString('fr-FR')}
+                                            <p className="text-slate-800 font-bold text-xs">
+                                                Du {new Date(res.reservation_date).toLocaleDateString('fr-FR')} à {res.start_time?.slice(0,5)}
                                             </p>
-                                            <p className="text-xs text-slate-500 mt-0.5">
-                                                Au {new Date(res.end_time).toLocaleDateString('fr-FR')}
+                                            <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                                                Au {new Date(res.end_date || res.reservation_date).toLocaleDateString('fr-FR')} à {res.end_time?.slice(0,5)}
                                             </p>
                                         </td>
                                         <td className="px-6 py-4 text-right">

@@ -101,6 +101,19 @@ export default function RoomShow() {
         });
     };
 
+    const handleToggleStatus = async () => {
+        const newStatus = room.status === 'available' ? 'maintenance' : 'available';
+        setActionLoading(true);
+        try {
+            await roomService.updateStatus(id, newStatus);
+            setRoom(prev => ({ ...prev, status: newStatus }));
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
             <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
@@ -153,7 +166,22 @@ export default function RoomShow() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button 
+                            onClick={handleToggleStatus}
+                            disabled={actionLoading}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all ${
+                                room.status === 'available' 
+                                    ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' 
+                                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                            }`}
+                        >
+                            {room.status === 'available' ? (
+                                <><ShieldAlert className="w-4 h-4" /> Mettre en maintenance</>
+                            ) : (
+                                <><CheckCircle className="w-4 h-4" /> Remettre disponible</>
+                            )}
+                        </button>
                         <Link 
                             to={`/admin/rooms/${room.id}/edit`}
                             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:opacity-90 active:scale-95 transition-all"
@@ -262,7 +290,7 @@ export default function RoomShow() {
                                             </div>
                                             <div className="text-xs flex items-center gap-2" style={{ color: T.onSurfaceVariant }}>
                                                 <CalendarDays className="w-3.5 h-3.5" />
-                                                Du {new Date(res.check_in_date).toLocaleDateString()} au {new Date(res.check_out_date).toLocaleDateString()}
+                                                Du {new Date(res.reservation_date).toLocaleDateString('fr-FR')} au {new Date(res.end_date || res.reservation_date).toLocaleDateString('fr-FR')}
                                             </div>
                                         </div>
                                         <div className="text-right">
@@ -287,7 +315,7 @@ export default function RoomShow() {
                     <div className="bg-white rounded-2xl border shadow-sm p-6 sticky top-6" style={{ borderColor: `${T.outlineVariant}50` }}>
                         <div className="flex items-center justify-between mb-6 pb-4 border-b" style={{ borderColor: `${T.outlineVariant}50` }}>
                             <h2 className="text-lg font-bold" style={{ color: T.onSurface }}>Détails & Tarifs</h2>
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${room.status === 'available' ? 'bg-green-100 text-green-700' : room.status === 'occupied' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${room.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                                 {statusLabel}
                             </span>
                         </div>

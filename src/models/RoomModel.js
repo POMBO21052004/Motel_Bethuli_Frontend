@@ -1,6 +1,5 @@
 export const RoomStatus = {
     AVAILABLE: 'available',
-    OCCUPIED: 'occupied',
     MAINTENANCE: 'maintenance'
 };
 
@@ -21,7 +20,6 @@ export class RoomModel {
     static getStatusLabel(status) {
         switch (status) {
             case RoomStatus.AVAILABLE: return 'Disponible';
-            case RoomStatus.OCCUPIED: return 'Occupée';
             case RoomStatus.MAINTENANCE: return 'En maintenance';
             default: return status;
         }
@@ -30,7 +28,6 @@ export class RoomModel {
     static getStatusColor(status) {
         switch (status) {
             case RoomStatus.AVAILABLE: return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-            case RoomStatus.OCCUPIED: return 'bg-rose-100 text-rose-800 border-rose-200';
             case RoomStatus.MAINTENANCE: return 'bg-amber-100 text-amber-800 border-amber-200';
             default: return 'bg-slate-100 text-slate-800 border-slate-200';
         }

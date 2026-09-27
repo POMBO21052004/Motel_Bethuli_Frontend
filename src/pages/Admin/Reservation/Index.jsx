@@ -11,7 +11,7 @@ const T = {
     surfaceVariant: '#fef3c7', secondary: '#b45309', error: '#ef4444',
 };
 
-const statuses = ['all', ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED, ReservationStatus.CANCELLED];
+const statuses = ['all', ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CANCELLED];
 
 export default function ReservationIndex() {
     const navigate = useNavigate();
@@ -24,7 +24,6 @@ export default function ReservationIndex() {
     const getStatusStyle = (statusValue) => {
         switch(statusValue) {
             case ReservationStatus.CONFIRMED: return 'bg-blue-100 text-blue-700 border-blue-200';
-            case ReservationStatus.COMPLETED: return 'bg-green-100 text-green-700 border-green-200';
             case ReservationStatus.CANCELLED: return 'bg-red-100 text-red-700 border-red-200';
             case ReservationStatus.PENDING: default: return 'bg-amber-100 text-amber-700 border-amber-200';
         }
@@ -155,7 +154,7 @@ export default function ReservationIndex() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <p className="font-bold text-slate-700">{new Date(item.reservation_date).toLocaleDateString('fr-FR')}</p>
+                                            <p className="font-bold text-slate-700">Du {new Date(item.reservation_date).toLocaleDateString('fr-FR')} au {new Date(item.end_date || item.reservation_date).toLocaleDateString('fr-FR')}</p>
                                             <p className="text-xs text-slate-400 mt-0.5 font-medium">
                                                 {item.start_time.slice(0,5)} à {item.end_time.slice(0,5)}
                                             </p>

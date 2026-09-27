@@ -1,0 +1,222 @@
+@import "tailwindcss";
+
+/* ── Tailwind v4 : dark mode via classe .dark sur <html> ── */
+@variant dark (&:where(.dark, .dark *));
+
+/* ── Couleurs primaires ── */
+@theme {
+  --color-primary: #008000;
+  --color-primary-dark: #006400;
+}
+
+/* ── Typographie ── */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc; /* slate-50 */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ═══════════════════════════════════════════════
+   DARK MODE — Surcharges CSS globales
+   Couvre toutes les pages sans modifier chaque fichier
+═══════════════════════════════════════════════ */
+
+.dark body {
+    background-color: #0f172a; /* slate-950 */
+    color: #e2e8f0; /* slate-200 */
+}
+
+/* Backgrounds */
+.dark .bg-white {
+    background-color: #1e293b !important; /* slate-800 */
+}
+.dark .bg-slate-50 {
+    background-color: #0f172a !important; /* slate-950 */
+}
+.dark .bg-slate-50\/50 {
+    background-color: rgba(15, 23, 42, 0.5) !important;
+}
+.dark .bg-slate-100 {
+    background-color: #334155 !important; /* slate-700 */
+}
+.dark .bg-slate-200 {
+    background-color: #475569 !important; /* slate-600 */
+}
+
+/* Hover backgrounds */
+.dark .hover\:bg-white:hover {
+    background-color: #1e293b !important;
+}
+.dark .hover\:bg-slate-50:hover {
+    background-color: #334155 !important;
+}
+.dark .hover\:bg-slate-50\/50:hover {
+    background-color: rgba(51, 65, 85, 0.5) !important;
+}
+.dark .hover\:bg-slate-100:hover {
+    background-color: #475569 !important;
+}
+
+/* Borders */
+.dark .border-slate-100 {
+    border-color: #334155 !important; /* slate-700 */
+}
+.dark .border-slate-200 {
+    border-color: #475569 !important; /* slate-600 */
+}
+.dark .border-slate-300 {
+    border-color: #64748b !important; /* slate-500 */
+}
+.dark .border-b {
+    border-color: #334155 !important;
+}
+.dark .border-t {
+    border-color: #334155 !important;
+}
+.dark .divide-slate-100 > * + * {
+    border-color: #334155 !important;
+}
+.dark .divide-y > * + * {
+    border-color: #334155 !important;
+}
+
+/* Text colors */
+.dark .text-slate-900 {
+    color: #f1f5f9 !important; /* slate-100 */
+}
+.dark .text-slate-800 {
+    color: #e2e8f0 !important; /* slate-200 */
+}
+.dark .text-slate-700 {
+    color: #cbd5e1 !important; /* slate-300 */
+}
+.dark .text-slate-600 {
+    color: #94a3b8 !important; /* slate-400 */
+}
+.dark .text-slate-500 {
+    color: #64748b !important; /* slate-500 */
+}
+.dark .text-slate-400 {
+    color: #475569 !important; /* slate-600 */
+}
+
+/* Inputs & Forms */
+.dark input,
+.dark textarea,
+.dark select {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-color: #475569 !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: #64748b !important;
+}
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+    border-color: #008000 !important;
+    background-color: #263148 !important;
+}
+
+/* Shadows : atténuation en dark mode */
+.dark .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+.dark .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4) !important;
+}
+.dark .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Right Sidebar Panel */
+.dark .bg-white.z-40 {
+    background-color: #1e293b !important;
+}
+
+/* kbd keys (recherche) */
+.dark kbd {
+    background-color: #334155 !important;
+    border-color: #475569 !important;
+    color: #e2e8f0 !important;
+}
+
+/* Scrollbar en dark */
+.dark ::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+.dark ::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* ── Modaux (ConfirmationModal, etc.) ── */
+/* Le bg-white du modal panel est déjà couvert par .dark .bg-white */
+/* Footer du modal */
+.dark .bg-slate-50.border-t {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+}
+/* Bouton Annuler dans modal */
+.dark .bg-slate-200\/30 {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+}
+.dark .hover\:bg-slate-200\/50:hover {
+    background-color: rgba(71, 85, 105, 0.5) !important;
+}
+
+/* ── Page Loader (fixed, full screen) ── */
+.dark .fixed.inset-0.bg-white {
+    background-color: #0f172a !important;
+}
+
+/* ── Tables ── */
+.dark table {
+    background-color: transparent;
+}
+.dark th {
+    background-color: transparent;
+}
+.dark tr:hover {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+}
+
+/* ── Badges & Pills couleurs neutres ── */
+.dark .bg-slate-100.text-slate-600 {
+    background-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+/* ── KPI card icon backgrounds ── */
+.dark .bg-indigo-50 { background-color: rgba(99, 102, 241, 0.15) !important; }
+.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.12) !important; }
+.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.12) !important; }
+.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.12) !important; }
+.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.12) !important; }
+.dark .bg-green-50 { background-color: rgba(34, 197, 94, 0.12) !important; }
+.dark .bg-primary\/10 { background-color: rgba(0, 128, 0, 0.15) !important; }
+.dark .bg-blue-50\/50 { background-color: rgba(59, 130, 246, 0.08) !important; }
+
+/* ── Progress bars ── */
+.dark .bg-slate-200 {
+    background-color: #334155 !important;
+}
+
+/* ── Notifications right panel ── */
+.dark .bg-blue-50\/50 {
+    background-color: rgba(30, 58, 138, 0.15) !important;
+}
+
+
+/* ── Animations ── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}

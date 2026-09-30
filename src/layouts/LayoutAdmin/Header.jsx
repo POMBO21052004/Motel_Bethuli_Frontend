@@ -48,7 +48,7 @@ export default function Header({ onToggleSidebar, onToggleNotifications, showNot
                 <div className="flex items-center gap-2 md:gap-4">
                     <button
                         onClick={onToggleSidebar}
-                        className="lg:hidden p-2 rounded-xl transition-colors bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
+                        className="xl:hidden p-2 rounded-xl transition-colors bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
                         aria-label="Ouvrir le menu"
                     >
                         <Menu className="w-5 h-5" />

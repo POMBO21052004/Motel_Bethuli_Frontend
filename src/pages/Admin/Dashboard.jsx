@@ -23,6 +23,7 @@ export default function AdminDashboard() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [currentTime, setCurrentTime] = useState(new Date());
     const navigate = useNavigate();
     const { user } = useAuth();
 
@@ -31,6 +32,9 @@ export default function AdminDashboard() {
             .then((response) => setData(response.data))
             .catch(() => setError('Impossible de charger le tableau de bord.'))
             .finally(() => setLoading(false));
+            
+        const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+        return () => clearInterval(timer);
     }, []);
 
     if (loading) return <div className="flex justify-center py-24"><Loader2 className="h-8 w-8 animate-spin text-amber-500" /></div>;
@@ -81,7 +85,9 @@ export default function AdminDashboard() {
                             {getGreeting()} {user?.prenom || ''}, voici les activités
                         </p>
                         <p className="text-xs font-semibold opacity-60">
-                            {new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            {currentTime.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            {' • '}
+                            {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                     </div>
                 </div>

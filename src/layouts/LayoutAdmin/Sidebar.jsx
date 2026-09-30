@@ -47,7 +47,7 @@ export default function Sidebar() {
 
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth < 1024) {
+            if (window.innerWidth < 1280) {
                 setMobileOpen(false);
             }
         };
@@ -204,7 +204,7 @@ export default function Sidebar() {
     return (
         <>
             <div
-                className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm lg:hidden transition-opacity duration-300 z-[45] ${
+                className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm xl:hidden transition-opacity duration-300 z-[45] ${
                     mobileOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
                 }`}
                 onClick={() => setMobileOpen(false)}
@@ -214,8 +214,8 @@ export default function Sidebar() {
                 className={`
                     fixed top-0 left-0 bottom-0 flex flex-col bg-[#111827] text-slate-300
                     transition-transform duration-300 ease-in-out z-[50] shadow-xl border-r border-white/5
-                    ${collapsed ? 'w-[260px] lg:w-[72px]' : 'w-[260px]'}
-                    ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                    ${collapsed ? 'w-[260px] xl:w-[72px]' : 'w-[260px]'}
+                    ${mobileOpen ? 'translate-x-0' : '-translate-x-full xl:translate-x-0'}
                 `}
             >
                 <div className={`flex items-center py-6 ${collapsed ? 'px-0 justify-center' : 'px-4 justify-between'}`}>
@@ -223,14 +223,14 @@ export default function Sidebar() {
                         <div className="flex-shrink-0 flex items-center justify-center">
                             <BedDouble className={`${collapsed ? 'w-8 h-8' : 'w-10 h-10'} text-amber-500 transition-all duration-300`} />
                         </div>
-                        <div className={`min-w-0 overflow-hidden ${collapsed ? 'lg:hidden' : 'block'}`}>
+                        <div className={`min-w-0 overflow-hidden ${collapsed ? 'xl:hidden' : 'block'}`}>
                             <h1 className="text-sm font-black tracking-tight text-white truncate">Motel Bethuli</h1>
                             <p className="text-[9px] font-semibold uppercase tracking-widest text-amber-500 truncate">Admin Dashboard</p>
                         </div>
                     </div>
                     <button
                         onClick={() => setCollapsed(true)}
-                        className={`p-1.5 rounded-lg transition-all hover:bg-white/10 hidden lg:block text-slate-400 hover:text-white ${collapsed ? 'lg:hidden' : ''}`}
+                        className={`p-1.5 rounded-lg transition-all hover:bg-white/10 hidden xl:block text-slate-400 hover:text-white ${collapsed ? 'xl:hidden' : ''}`}
                     >
                         <ArrowLeftRight className="w-4 h-4" />
                     </button>
@@ -238,7 +238,7 @@ export default function Sidebar() {
 
                 <button
                     onClick={() => setCollapsed(false)}
-                    className={`mx-auto mb-2 p-1.5 rounded-lg transition-all hover:bg-white/10 hidden lg:flex items-center justify-center text-slate-400 hover:text-white ${!collapsed ? 'lg:hidden' : ''}`}
+                    className={`mx-auto mb-2 p-1.5 rounded-lg transition-all hover:bg-white/10 hidden xl:flex items-center justify-center text-slate-400 hover:text-white ${!collapsed ? 'xl:hidden' : ''}`}
                 >
                     <ArrowLeftRight className="w-4 h-4" />
                 </button>

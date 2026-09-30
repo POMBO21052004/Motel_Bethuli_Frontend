@@ -58,6 +58,7 @@ import ReceptionClients from '../pages/Reception/Clients';
 import ClientReservations from '../pages/Client/Reservations';
 import ClientProfile from '../pages/Client/Profile';
 import ClientRatings from '../pages/Client/Ratings';
+import ClientRooms from '../pages/Client/Rooms';
 
 const AppRouter = () => {
     const location = useLocation();
@@ -86,10 +87,11 @@ const AppRouter = () => {
             {/* Protected Client Routes */}
             <Route element={<PrivateRoute allowedRoles={['client', 'admin', 'receptionniste']} />}>
                 <Route element={<LayoutClient />}>
-                    <Route path="/client/dashboard" element={<ClientDashboard />} />
+                    <Route path="/client/dashboard"    element={<ClientDashboard />} />
+                    <Route path="/client/rooms"        element={<ClientRooms />} />
                     <Route path="/client/reservations" element={<ClientReservations />} />
-                    <Route path="/client/profile" element={<ClientProfile />} />
-                    <Route path="/client/ratings" element={<ClientRatings />} />
+                    <Route path="/client/profile"      element={<ClientProfile />} />
+                    <Route path="/client/ratings"      element={<ClientRatings />} />
                 </Route>
             </Route>
 

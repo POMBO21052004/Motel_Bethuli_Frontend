@@ -130,40 +130,40 @@ const HeroSection = () => {
         {/* Search Form */}
         <form
           onSubmit={handleSearch}
-          className="w-full max-w-4xl bg-white rounded-xl shadow-2xl p-2 flex flex-col md:flex-row items-stretch gap-2"
+          className="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-2 flex flex-col md:flex-row items-stretch gap-2 transition-colors duration-300"
         >
-          <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg">
+          <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors duration-300">
             <Calendar className="h-5 w-5 text-amber-500 flex-shrink-0" />
             <div className="flex flex-col w-full text-left">
-              <span className="text-xs text-gray-400 uppercase font-semibold">Date</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Date</span>
               <input
                 type="date"
                 required
-                className="bg-transparent border-none focus:outline-none text-slate-800 font-semibold text-sm w-full p-0"
+                className="bg-transparent border-none focus:outline-none text-slate-800 dark:text-white font-semibold text-sm w-full p-0 [color-scheme:light] dark:[color-scheme:dark]"
                 value={searchParams.date}
                 onChange={(e) => setSearchParams({...searchParams, date: e.target.value})}
               />
             </div>
           </div>
-          <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg">
+          <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors duration-300">
             <Clock className="h-5 w-5 text-amber-500 flex-shrink-0" />
             <div className="flex flex-col w-full text-left">
-              <span className="text-xs text-gray-400 uppercase font-semibold">{t('start_time')}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">{t('start_time')}</span>
               <input
                 type="time"
-                className="bg-transparent border-none focus:outline-none text-slate-800 font-semibold text-sm w-full p-0"
+                className="bg-transparent border-none focus:outline-none text-slate-800 dark:text-white font-semibold text-sm w-full p-0 [color-scheme:light] dark:[color-scheme:dark]"
                 value={searchParams.startTime}
                 onChange={(e) => setSearchParams({...searchParams, startTime: e.target.value})}
               />
             </div>
           </div>
-          <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg">
+          <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors duration-300">
             <Clock className="h-5 w-5 text-amber-500 flex-shrink-0" />
             <div className="flex flex-col w-full text-left">
-              <span className="text-xs text-gray-400 uppercase font-semibold">{t('end_time')}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">{t('end_time')}</span>
               <input
                 type="time"
-                className="bg-transparent border-none focus:outline-none text-slate-800 font-semibold text-sm w-full p-0"
+                className="bg-transparent border-none focus:outline-none text-slate-800 dark:text-white font-semibold text-sm w-full p-0 [color-scheme:light] dark:[color-scheme:dark]"
                 value={searchParams.endTime}
                 onChange={(e) => setSearchParams({...searchParams, endTime: e.target.value})}
               />

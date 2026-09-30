@@ -4,7 +4,8 @@ import {
     ArrowRight, Shield, Edit2, Trash2, Mail, Phone, User,
     Calendar, ShieldCheck, Loader2, ShieldOff, CheckCircle2,
     BedDouble, Clock, CreditCard, FileText, Users, ShieldAlert,
-    CheckCircle
+    CheckCircle, XCircle, CreditCard as IdCard, BadgeCheck, BadgeX,
+    MapPin, Globe, Image as ImageIcon
 } from 'lucide-react';
 import clientService from '../../../services/clientService';
 import { useToast } from '../../../components/common/ToastContext';
@@ -76,17 +77,56 @@ function PasswordModal({ isOpen, onClose, onConfirm, title, message, type = 'dan
     );
 }
 
+// CNI image with click-to-enlarge
+function CniImage({ path, label }) {
+    const [enlarged, setEnlarged] = useState(false);
+    if (!path) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed bg-slate-50 p-6" style={{ borderColor: T.outlineVariant }}>
+                <ImageIcon className="w-8 h-8 text-slate-300" />
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+                <p className="text-[10px] text-slate-400">Non fournie</p>
+            </div>
+        );
+    }
+    const src = `${API_BASE}/storage/${path}`;
+    return (
+        <>
+            <div className="relative group cursor-pointer" onClick={() => setEnlarged(true)}>
+                <img src={src} alt={label} className="w-full h-36 object-cover rounded-xl border shadow-sm group-hover:opacity-90 transition-opacity" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-xl">
+                    <span className="text-white text-xs font-bold bg-black/50 px-2 py-1 rounded">Agrandir</span>
+                </div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center mt-2">{label}</p>
+            </div>
+            {enlarged && (
+                <div className="fixed inset-0 z-[4000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setEnlarged(false)}>
+                    <img src={src} alt={label} className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain" />
+                    <button className="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2" onClick={() => setEnlarged(false)}>
+                        <XCircle className="w-6 h-6" />
+                    </button>
+                </div>
+            )}
+        </>
+    );
+}
+
+// TABS
+const TABS = ['Réservations', 'Profil CNI'];
+
 export default function AdminClientShow() {
     const { id } = useParams();
     const navigate = useNavigate();
     const toast = useToast();
     const { user } = useAuth();
-    
+
     const [client, setClient] = useState(null);
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalConfig, setModalConfig] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState('Réservations');
+    const [cniLoading, setCniLoading] = useState(false);
 
     const openModal = (config) => setModalConfig(config);
     const closeModal = () => setModalConfig(null);
@@ -177,6 +217,28 @@ export default function AdminClientShow() {
         });
     };
 
+    const handleToggleCniVerified = async () => {
+        const profile = client?.customer_profile;
+        if (!profile?.cni_recto_path || !profile?.cni_verso_path) {
+            toast.error('Les deux faces de la CNI (recto et verso) doivent être présentes avant de pouvoir vérifier.');
+            return;
+        }
+        setCniLoading(true);
+        try {
+            const res = await clientService.toggleCniVerified(id);
+            const newVerified = res.data?.cni_verified;
+            setClient(prev => ({
+                ...prev,
+                customer_profile: { ...prev.customer_profile, cni_verified: newVerified }
+            }));
+            toast.success(res.data?.message || 'Statut CNI mis à jour.');
+        } catch (err) {
+            toast.error(err?.response?.data?.message || 'Impossible de mettre à jour le statut CNI.');
+        } finally {
+            setCniLoading(false);
+        }
+    };
+
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
             <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
@@ -191,21 +253,26 @@ export default function AdminClientShow() {
     const createdDate = client.created_at
         ? new Date(client.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
         : 'Inconnue';
-    
+
     const daysSinceLastLogin = client.last_login
         ? Math.floor((Date.now() - new Date(client.last_login)) / (1000 * 60 * 60 * 24))
         : null;
 
-    const needsVerification = !client.is_verified || daysSinceLastLogin === null || daysSinceLastLogin > 7;
     const isSelf = user && user.id === client.id;
-    
+
     const totalDepense = reservations
         .filter(r => r.status === 'confirmed')
         .reduce((acc, r) => acc + parseFloat(r.total_price || 0), 0);
 
+    const profile = client?.customer_profile;
+    const cniVerified = profile?.cni_verified;
+    const hasRecto = !!profile?.cni_recto_path;
+    const hasVerso = !!profile?.cni_verso_path;
+    const canToggleCni = hasRecto && hasVerso;
+
     return (
-        <div className="space-y-6 animate-in fade-in duration-700" style={{ color: T.onSurface }}>
-            
+        <div className="space-y-6 animate-in fade-in duration-700 pb-20" style={{ color: T.onSurface }}>
+
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: T.outline }}>
                 <span className="hover:underline cursor-pointer" onClick={() => navigate('/admin')}>Dashboard</span>
@@ -258,6 +325,16 @@ export default function AdminClientShow() {
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white/80">
                                     <ShieldCheck className="w-3.5 h-3.5" /> Client
                                 </span>
+                                {/* CNI badge */}
+                                {cniVerified ? (
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400">
+                                        <BadgeCheck className="w-3.5 h-3.5" /> CNI Vérifiée
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400">
+                                        <BadgeX className="w-3.5 h-3.5" /> CNI non vérifiée
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -286,8 +363,8 @@ export default function AdminClientShow() {
 
             {/* Main grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* Left: Personal Info */}
+
+                {/* Left: Personal Info + Security */}
                 <div className="space-y-6">
                     <div className="bg-white rounded-2xl border shadow-sm p-6" style={{ borderColor: `${T.outlineVariant}50` }}>
                         <h3 className="text-base font-bold flex items-center gap-2 pb-4 mb-2 border-b"
@@ -306,6 +383,8 @@ export default function AdminClientShow() {
                                 value={client.sexe === 'M' ? 'Masculin' : client.sexe === 'F' ? 'Féminin' : null} />
                             <InfoRow icon={<Calendar className="w-3.5 h-3.5" />} label="Date de naissance" value={client.date_naissance} />
                             <InfoRow icon={<Shield className="w-3.5 h-3.5" />} label="Inscrit le" value={createdDate} />
+                            {profile?.adresse && <InfoRow icon={<MapPin className="w-3.5 h-3.5" />} label="Adresse" value={`${profile.adresse}${profile.ville ? ', ' + profile.ville : ''}`} />}
+                            {profile?.pays && <InfoRow icon={<Globe className="w-3.5 h-3.5" />} label="Pays / Nationalité" value={`${profile.pays}${profile.nationalite ? ' · ' + profile.nationalite : ''}`} />}
                         </div>
                     </div>
 
@@ -316,7 +395,7 @@ export default function AdminClientShow() {
                                 style={{ background: T.surfaceVariant, color: T.primary }}>
                                 <ShieldAlert className="w-4 h-4" />
                             </div>
-                            Sécurité & Accès
+                            Sécurité &amp; Accès
                         </h3>
                         <div className="space-y-3">
                             <div className="flex items-center justify-between p-3 rounded-xl border" style={{ borderColor: `${T.outlineVariant}40`, background: `${T.surfaceVariant}10` }}>
@@ -348,9 +427,9 @@ export default function AdminClientShow() {
                     </div>
                 </div>
 
-                {/* Right: Reservations */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Stats reservation */}
+                {/* Right: Tabs (Réservations / Profil CNI) */}
+                <div className="lg:col-span-2 space-y-5">
+                    {/* Stats */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {[
                             { label: 'Total réserv.', value: reservations.length, icon: <BedDouble className="w-5 h-5" />, color: T.primary },
@@ -366,76 +445,175 @@ export default function AdminClientShow() {
                         ))}
                     </div>
 
-                    {/* Reservations list */}
-                    <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: `${T.outlineVariant}50` }}>
-                        <div className="p-5 border-b flex items-center gap-2" style={{ borderColor: `${T.outlineVariant}30` }}>
-                            <div className="p-1.5 rounded-lg" style={{ background: T.surfaceVariant, color: T.primary }}>
-                                <FileText className="w-4 h-4" />
-                            </div>
-                            <p className="text-sm font-bold" style={{ color: T.onSurface }}>Historique des réservations</p>
-                            <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: T.surfaceVariant, color: T.secondary }}>{reservations.length}</span>
-                        </div>
-
-                        {reservations.length === 0 ? (
-                            <div className="p-12 text-center">
-                                <BedDouble className="w-10 h-10 mx-auto mb-3 opacity-20" style={{ color: T.onSurface }} />
-                                <p className="text-sm font-semibold" style={{ color: T.outline }}>Aucune réservation pour ce client.</p>
-                            </div>
-                        ) : (
-                            <div className="divide-y" style={{ borderColor: `${T.outlineVariant}20` }}>
-                                {reservations.map(r => {
-                                    const s = STATUS_STYLES[r.status] || STATUS_STYLES.pending;
-                                    const floor = r.floor === 0 ? 'Rez-de-chaussée' : r.floor != null ? `Étage ${r.floor}` : '';
-                                    return (
-                                        <div key={r.id} className="p-4 hover:bg-amber-50/20 transition-colors">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: T.surfaceVariant }}>
-                                                        <BedDouble className="w-4 h-4" style={{ color: T.primary }} />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold" style={{ color: T.onSurface }}>{r.room_name || '—'}</p>
-                                                        {floor && <p className="text-[10px] font-bold uppercase tracking-wider mt-0.5" style={{ color: T.outline }}>{floor}</p>}
-                                                    </div>
-                                                </div>
-                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${s.bg} ${s.text}`}>
-                                                    {s.label}
-                                                </span>
-                                            </div>
-                                            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Calendar className="w-3.5 h-3.5" style={{ color: T.outline }} />
-                                                    <span className="text-xs font-medium" style={{ color: T.onSurfaceVariant }}>
-                                                        {r.reservation_date ? `Du ${new Date(r.reservation_date).toLocaleDateString('fr-FR')}` : '—'} 
-                                                        {r.end_date && r.end_date !== r.reservation_date ? ` au ${new Date(r.end_date).toLocaleDateString('fr-FR')}` : ''}
-                                                    </span>
-                                                </div>
-                                                {(r.start_time || r.end_time) && (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Clock className="w-3.5 h-3.5" style={{ color: T.outline }} />
-                                                        <span className="text-xs font-medium" style={{ color: T.onSurfaceVariant }}>{r.start_time || '—'} → {r.end_time || '—'}</span>
-                                                    </div>
-                                                )}
-                                                <div className="flex items-center gap-1.5">
-                                                    <CreditCard className="w-3.5 h-3.5" style={{ color: T.outline }} />
-                                                    <span className="text-xs font-bold" style={{ color: T.secondary }}>
-                                                        {parseFloat(r.total_price || 0).toLocaleString('fr-FR')} FCFA
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            {r.notes && (
-                                                <p className="mt-3 text-xs font-medium px-3 py-2 rounded-lg" style={{ background: T.surfaceVariant, color: T.onSurfaceVariant }}>
-                                                    {r.notes}
-                                                </p>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
+                    {/* Tabs bar */}
+                    <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+                        {TABS.map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === tab ? 'bg-white shadow text-amber-600' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
                     </div>
-                </div>
 
+                    {/* Tab: Réservations */}
+                    {activeTab === 'Réservations' && (
+                        <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: `${T.outlineVariant}50` }}>
+                            <div className="p-5 border-b flex items-center gap-2" style={{ borderColor: `${T.outlineVariant}30` }}>
+                                <div className="p-1.5 rounded-lg" style={{ background: T.surfaceVariant, color: T.primary }}>
+                                    <FileText className="w-4 h-4" />
+                                </div>
+                                <p className="text-sm font-bold" style={{ color: T.onSurface }}>Historique des réservations</p>
+                                <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: T.surfaceVariant, color: T.secondary }}>{reservations.length}</span>
+                            </div>
+
+                            {reservations.length === 0 ? (
+                                <div className="p-12 text-center">
+                                    <BedDouble className="w-10 h-10 mx-auto mb-3 opacity-20" style={{ color: T.onSurface }} />
+                                    <p className="text-sm font-semibold" style={{ color: T.outline }}>Aucune réservation pour ce client.</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y" style={{ borderColor: `${T.outlineVariant}20` }}>
+                                    {reservations.map(r => {
+                                        const s = STATUS_STYLES[r.status] || STATUS_STYLES.pending;
+                                        const floor = r.floor === 0 ? 'Rez-de-chaussée' : r.floor != null ? `Étage ${r.floor}` : '';
+                                        return (
+                                            <div key={r.id} className="p-4 hover:bg-amber-50/20 transition-colors">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: T.surfaceVariant }}>
+                                                            <BedDouble className="w-4 h-4" style={{ color: T.primary }} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold" style={{ color: T.onSurface }}>{r.room_name || '—'}</p>
+                                                            {floor && <p className="text-[10px] font-bold uppercase tracking-wider mt-0.5" style={{ color: T.outline }}>{floor}</p>}
+                                                        </div>
+                                                    </div>
+                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${s.bg} ${s.text}`}>
+                                                        {s.label}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Calendar className="w-3.5 h-3.5" style={{ color: T.outline }} />
+                                                        <span className="text-xs font-medium" style={{ color: T.onSurfaceVariant }}>
+                                                            {r.reservation_date ? `Du ${new Date(r.reservation_date).toLocaleDateString('fr-FR')}` : '—'}
+                                                            {r.end_date && r.end_date !== r.reservation_date ? ` au ${new Date(r.end_date).toLocaleDateString('fr-FR')}` : ''}
+                                                        </span>
+                                                    </div>
+                                                    {(r.start_time || r.end_time) && (
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Clock className="w-3.5 h-3.5" style={{ color: T.outline }} />
+                                                            <span className="text-xs font-medium" style={{ color: T.onSurfaceVariant }}>{r.start_time?.slice(0,5) || '—'} → {r.end_time?.slice(0,5) || '—'}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center gap-1.5">
+                                                        <CreditCard className="w-3.5 h-3.5" style={{ color: T.outline }} />
+                                                        <span className="text-xs font-bold" style={{ color: T.secondary }}>
+                                                            {parseFloat(r.total_price || 0).toLocaleString('fr-FR')} FCFA
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {r.notes && (
+                                                    <p className="mt-3 text-xs font-medium px-3 py-2 rounded-lg" style={{ background: T.surfaceVariant, color: T.onSurfaceVariant }}>
+                                                        {r.notes}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Tab: Profil CNI */}
+                    {activeTab === 'Profil CNI' && (
+                        <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: `${T.outlineVariant}50` }}>
+                            <div className="p-5 border-b flex items-center gap-3" style={{ borderColor: `${T.outlineVariant}30` }}>
+                                <div className="p-1.5 rounded-lg" style={{ background: T.surfaceVariant, color: T.primary }}>
+                                    <IdCard className="w-4 h-4" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-bold" style={{ color: T.onSurface }}>Carte Nationale d'Identité</p>
+                                    <p className="text-[10px] uppercase font-bold tracking-wider mt-0.5" style={{ color: cniVerified ? '#059669' : '#d97706' }}>
+                                        {cniVerified ? 'CNI vérifiée ✓' : 'CNI non vérifiée'}
+                                    </p>
+                                </div>
+                                {/* Verification button */}
+                                <button
+                                    onClick={handleToggleCniVerified}
+                                    disabled={!canToggleCni || cniLoading}
+                                    title={!canToggleCni ? 'Les deux faces de la CNI doivent être présentes' : ''}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed
+                                        ${cniVerified
+                                            ? 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100'
+                                            : 'bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100'}`}
+                                >
+                                    {cniLoading
+                                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                                        : cniVerified
+                                            ? <><BadgeX className="w-4 h-4" /> Annuler vérification</>
+                                            : <><BadgeCheck className="w-4 h-4" /> Marquer vérifiée</>
+                                    }
+                                </button>
+                            </div>
+
+                            {/* Info notice */}
+                            <div className="mx-5 mt-5 flex items-start gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50">
+                                <ShieldAlert className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-bold text-amber-800">Réservations conditionnées à la vérification</p>
+                                    <p className="text-xs text-amber-700 mt-0.5">
+                                        Les comptes dont la CNI n'est pas vérifiée ne pourront pas effectuer de réservation. Vérifiez les deux faces avant de valider.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="p-5 space-y-5">
+                                {/* CNI Number */}
+                                {profile?.cni_number ? (
+                                    <div className="flex items-center gap-3 p-3 rounded-xl border bg-slate-50" style={{ borderColor: `${T.outlineVariant}50` }}>
+                                        <IdCard className="w-4 h-4 text-slate-400" />
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Numéro CNI</p>
+                                            <p className="text-sm font-black text-slate-900 font-mono tracking-widest mt-0.5">{profile.cni_number}</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-slate-400 italic text-center">Aucun numéro de CNI renseigné.</p>
+                                )}
+
+                                {/* CNI Images */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <CniImage path={profile?.cni_recto_path} label="Recto" />
+                                    <CniImage path={profile?.cni_verso_path} label="Verso" />
+                                </div>
+
+                                {!canToggleCni && (
+                                    <p className="text-xs font-semibold text-center text-orange-600 bg-orange-50 border border-orange-200 rounded-xl p-3">
+                                        ⚠ Les deux faces de la CNI doivent être uploadées avant de pouvoir passer le statut à « vérifiée ».
+                                    </p>
+                                )}
+
+                                {/* Additional profile info */}
+                                {profile && (
+                                    <div className="pt-2 border-t" style={{ borderColor: `${T.outlineVariant}30` }}>
+                                        <p className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.outline }}>Informations complémentaires</p>
+                                        <div className="space-y-1">
+                                            <InfoRow icon={<MapPin className="w-3.5 h-3.5" />} label="Adresse" value={profile.adresse} />
+                                            <InfoRow icon={<MapPin className="w-3.5 h-3.5" />} label="Ville" value={profile.ville} />
+                                            <InfoRow icon={<Globe className="w-3.5 h-3.5" />} label="Pays" value={profile.pays} />
+                                            <InfoRow icon={<Globe className="w-3.5 h-3.5" />} label="Nationalité" value={profile.nationalite} />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <PasswordModal

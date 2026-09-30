@@ -29,6 +29,9 @@ const clientService = {
 
     forceVerify: (id) =>
         api.post(`${BASE}/${id}/force-verify`),
+
+    toggleCniVerified: (id) =>
+        api.post(`${BASE}/${id}/toggle-cni-verified`),
 };
 
 export default clientService;

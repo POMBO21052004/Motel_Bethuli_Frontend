@@ -39,7 +39,7 @@ export default function DashboardLayout() {
                 {/* Responsive override for mobile */}
                 <style dangerouslySetInnerHTML={{
                     __html: `
-                        @media (max-width: 1023px) {
+                        @media (max-width: 1279px) {
                             div[style*="padding-left"] {
                                 padding-left: 0 !important;
                             }
@@ -76,7 +76,7 @@ export default function DashboardLayout() {
             {/* Overlay for notifications (mobile dimming, desktop invisible click-catcher) */}
             {showNotifications && (
                 <div
-                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm lg:bg-transparent lg:backdrop-blur-none z-30"
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm xl:bg-transparent xl:backdrop-blur-none z-30"
                     onClick={toggleNotifications}
                 />
             )}

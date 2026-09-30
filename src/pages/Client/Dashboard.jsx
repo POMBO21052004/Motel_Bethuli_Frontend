@@ -3,12 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     Activity, BedDouble, CalendarDays, CalendarCheck2, Clock3,
     Star, ChevronRight, MessageCircle, AlertTriangle, CheckCircle2,
-    Loader2, ArrowRight, Hotel, TrendingUp, X, AlertCircle
+    Loader2, ArrowRight, Hotel
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import dashboardService from '../../services/client/dashboardService';
-import reservationService from '../../services/client/reservationService';
-import clientRoomService from '../../services/client/roomService';
 import { getImageUrl } from '../../utils/getImageUrl.jsx';
 import { ReservationModel, ReservationStatus } from '../../models/ReservationModel';
 
@@ -16,10 +14,8 @@ const T = {
     bg: '#f8fafc', cardBg: '#ffffff', primary: '#f59e0b',
     onSurface: '#0f172a', onSurfaceVariant: '#475569',
     outline: '#94a3b8', outlineVariant: '#cbd5e1',
-    surfaceVariant: '#fef3c7', secondary: '#b45309',
 };
 
-// ── Helper ────────────────────────────────────────────────────────────────────
 function getGreeting() {
     const h = new Date().getHours();
     if (h < 12) return 'Bonjour';
@@ -96,110 +92,12 @@ function RoomCard({ room, onBook }) {
     );
 }
 
-// ── Booking Modal ─────────────────────────────────────────────────────────────
-function BookingModal({ room, onClose, onSuccess }) {
-    const today = new Date().toISOString().slice(0, 10);
-    const [form, setForm] = useState({ reservation_date: today, start_time: '12:00', end_date: today, end_time: '12:00', notes: '' });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-
-    const submit = async (e) => {
-        e.preventDefault();
-        setLoading(true); setError('');
-        try {
-            const res = await reservationService.store({ room_id: room.id, ...form });
-            onSuccess(res.data.data);
-        } catch (err) {
-            setError(err.response?.data?.message || 'Erreur lors de la réservation.');
-        } finally { setLoading(false); }
-    };
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50 rounded-t-3xl shrink-0">
-                    <div>
-                        <h3 className="font-black text-lg text-slate-900">Réserver</h3>
-                        <p className="text-sm font-bold text-amber-600">{room.name}</p>
-                    </div>
-                    <button onClick={onClose} className="p-2 bg-slate-200 text-slate-500 rounded-full hover:bg-slate-300">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-                <form id="book-form" onSubmit={submit} className="p-6 space-y-4 overflow-y-auto flex-1">
-                    {error && (
-                        <div className="p-4 bg-red-50 text-red-600 rounded-xl flex gap-3 items-start border border-red-100 text-sm font-bold">
-                            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />{error}
-                        </div>
-                    )}
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Date arrivée</label>
-                            <input required type="date" min={today} value={form.reservation_date} onChange={e => setForm({...form, reservation_date: e.target.value})} className="w-full p-3 rounded-xl bg-slate-50 border-transparent focus:border-amber-400 focus:ring-2 focus:ring-amber-100 text-sm font-semibold outline-none" />
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Heure</label>
-                            <input required type="time" value={form.start_time} onChange={e => setForm({...form, start_time: e.target.value})} className="w-full p-3 rounded-xl bg-slate-50 border-transparent text-sm font-semibold outline-none" />
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Date départ</label>
-                            <input required type="date" min={form.reservation_date} value={form.end_date} onChange={e => setForm({...form, end_date: e.target.value})} className="w-full p-3 rounded-xl bg-slate-50 border-transparent text-sm font-semibold outline-none" />
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Heure</label>
-                            <input required type="time" value={form.end_time} onChange={e => setForm({...form, end_time: e.target.value})} className="w-full p-3 rounded-xl bg-slate-50 border-transparent text-sm font-semibold outline-none" />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Notes (optionnel)</label>
-                        <textarea rows="3" value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} className="w-full p-3 rounded-xl bg-slate-50 text-sm resize-none outline-none" placeholder="Demandes particulières..." />
-                    </div>
-                </form>
-                <div className="p-6 border-t border-slate-100 shrink-0">
-                    <button type="submit" form="book-form" disabled={loading} className="w-full py-3.5 rounded-xl bg-amber-500 text-white font-black hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-amber-100">
-                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Confirmer la réservation'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// ── Success Modal ─────────────────────────────────────────────────────────────
-function SuccessModal({ reservation, onClose }) {
-    const openWhatsApp = () => {
-        const text = encodeURIComponent(`Bonjour, je viens d'effectuer une réservation pour la chambre "${reservation.room?.name}" du ${reservation.reservation_date}. Pouvez-vous confirmer ?`);
-        window.open(`https://wa.me/237600000000?text=${text}`, '_blank');
-    };
-    return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md">
-            <div className="bg-white rounded-3xl w-full max-w-sm p-8 text-center shadow-2xl animate-in zoom-in-95">
-                <div className="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-5">
-                    <CalendarCheck2 className="w-10 h-10" />
-                </div>
-                <h3 className="text-2xl font-black text-slate-900 mb-2">Réservation reçue !</h3>
-                <p className="text-slate-500 text-sm mb-6">Votre réservation est <strong className="text-amber-500">en attente</strong>. Contactez-nous sur WhatsApp pour une confirmation rapide.</p>
-                <div className="space-y-3">
-                    <button onClick={openWhatsApp} className="w-full py-3.5 rounded-xl bg-[#25D366] text-white font-black hover:bg-[#20bd5a] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/20">
-                        <MessageCircle className="w-5 h-5" /> Contacter sur WhatsApp
-                    </button>
-                    <button onClick={onClose} className="w-full py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors">
-                        Voir mes réservations
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function ClientDashboard() {
     const { user } = useAuth();
-    const navigate  = useNavigate();
+    const navigate = useNavigate();
     const [data, setData]               = useState(null);
     const [loading, setLoading]         = useState(true);
-    const [bookingRoom, setBookingRoom] = useState(null);
-    const [successRes, setSuccessRes]   = useState(null);
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -211,16 +109,6 @@ export default function ClientDashboard() {
         return () => clearInterval(t);
     }, []);
 
-    const handleBookingSuccess = (reservation) => {
-        setBookingRoom(null);
-        setSuccessRes(reservation);
-    };
-
-    const handleSuccessClose = () => {
-        setSuccessRes(null);
-        navigate('/client/reservations');
-    };
-
     if (loading) {
         return (
             <div className="flex justify-center py-24">
@@ -230,7 +118,7 @@ export default function ClientDashboard() {
     }
 
     const { stats, next_reservation, recent_reservations, available_rooms, available_rooms_count } = data || {};
-    const clientUser = data?.user;
+    const clientUser  = data?.user;
     const cniVerified = clientUser?.customer_profile?.cni_verified;
 
     const timeStr = currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -239,7 +127,7 @@ export default function ClientDashboard() {
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-6" style={{ color: T.onSurface }}>
 
-            {/* ── HERO HEADER ──────────────────────────────────────────────── */}
+            {/* ── HERO ──────────────────────────────────────────────────────── */}
             <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-2xl" style={{ background: T.onSurface }}>
                 <div className="absolute -right-10 -top-10 opacity-5">
                     <Hotel size={240} className="rotate-12" />
@@ -268,7 +156,6 @@ export default function ClientDashboard() {
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3 shrink-0">
-                        {/* Statut CNI */}
                         <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur-sm ${cniVerified ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-amber-500/30 bg-amber-500/10'}`}>
                             {cniVerified
                                 ? <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -288,7 +175,7 @@ export default function ClientDashboard() {
                 </div>
             </div>
 
-            {/* ── ALERTE CNI si non vérifié ─────────────────────────────────── */}
+            {/* ── ALERTE CNI ────────────────────────────────────────────────── */}
             {!cniVerified && (
                 <div className="flex items-start gap-4 p-5 rounded-2xl border border-amber-200 bg-amber-50">
                     <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
@@ -302,7 +189,7 @@ export default function ClientDashboard() {
                 </div>
             )}
 
-            {/* ── STATS ────────────────────────────────────────────────────── */}
+            {/* ── STATS ─────────────────────────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard icon={CalendarDays}  label="Réservations"  value={stats?.total}         color="amber"   accent="Toutes périodes" />
                 <StatCard icon={Clock3}         label="En attente"    value={stats?.pending}        color="rose"    accent="À confirmer" />
@@ -310,7 +197,7 @@ export default function ClientDashboard() {
                 <StatCard icon={Star}           label="Avis déposés" value={stats?.ratings_count}  color="indigo"  accent="Notes laissées" />
             </div>
 
-            {/* ── PROCHAINE RÉSERVATION ─────────────────────────────────────── */}
+            {/* ── PROCHAIN SÉJOUR ───────────────────────────────────────────── */}
             {next_reservation ? (
                 <div>
                     <h2 className="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
@@ -343,12 +230,12 @@ export default function ClientDashboard() {
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Arrivée</p>
                                     <p className="font-black text-slate-900">{new Date(next_reservation.reservation_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
-                                    <p className="text-xs font-bold text-amber-500">{next_reservation.start_time?.slice(0,5)}</p>
+                                    <p className="text-xs font-bold text-amber-500">{next_reservation.start_time?.slice(0, 5)}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Départ</p>
                                     <p className="font-black text-slate-900">{new Date(next_reservation.end_date || next_reservation.reservation_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
-                                    <p className="text-xs font-bold text-amber-500">{next_reservation.end_time?.slice(0,5)}</p>
+                                    <p className="text-xs font-bold text-amber-500">{next_reservation.end_time?.slice(0, 5)}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Montant</p>
@@ -375,8 +262,8 @@ export default function ClientDashboard() {
                 <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center">
                     <CalendarDays className="w-12 h-12 text-slate-200 mx-auto mb-3" />
                     <p className="font-black text-slate-400">Aucun séjour à venir</p>
-                    <Link to="/client/rooms" className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors">
-                        Découvrir les chambres <ArrowRight className="w-4 h-4" />
+                    <Link to="/client/reservations/create" className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors">
+                        Faire une réservation <ArrowRight className="w-4 h-4" />
                     </Link>
                 </div>
             )}
@@ -395,12 +282,16 @@ export default function ClientDashboard() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {(available_rooms || []).map(room => (
-                        <RoomCard key={room.id} room={room} onBook={setBookingRoom} />
+                        <RoomCard
+                            key={room.id}
+                            room={room}
+                            onBook={(r) => navigate(`/client/reservations/create?room_id=${r.id}`)}
+                        />
                     ))}
                 </div>
             </div>
 
-            {/* ── DERNIÈRES RÉSERVATIONS ────────────────────────────────────── */}
+            {/* ── ACTIVITÉ RÉCENTE ──────────────────────────────────────────── */}
             {recent_reservations?.length > 0 && (
                 <div>
                     <div className="flex items-center justify-between mb-4">
@@ -422,7 +313,7 @@ export default function ClientDashboard() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="font-bold text-slate-900 truncate">{res.room?.name}</p>
-                                    <p className="text-[11px] text-slate-500">{new Date(res.reservation_date).toLocaleDateString('fr-FR')} · {res.start_time?.slice(0,5)}</p>
+                                    <p className="text-[11px] text-slate-500">{new Date(res.reservation_date).toLocaleDateString('fr-FR')} · {res.start_time?.slice(0, 5)}</p>
                                 </div>
                                 <span className={`shrink-0 text-[10px] font-black px-2 py-1 rounded-full ${ReservationModel.getStatusColor(res.status?.value ?? res.status)}`}>
                                     {ReservationModel.getStatusLabel(res.status?.value ?? res.status)}
@@ -432,12 +323,6 @@ export default function ClientDashboard() {
                     </div>
                 </div>
             )}
-
-            {/* Modals */}
-            {bookingRoom && (
-                <BookingModal room={bookingRoom} onClose={() => setBookingRoom(null)} onSuccess={handleBookingSuccess} />
-            )}
-            {successRes && <SuccessModal reservation={successRes} onClose={handleSuccessClose} />}
         </div>
     );
 }

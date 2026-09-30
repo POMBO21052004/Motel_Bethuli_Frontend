@@ -59,6 +59,7 @@ import ClientReservations from '../pages/Client/Reservations';
 import ClientProfile from '../pages/Client/Profile';
 import ClientRatings from '../pages/Client/Ratings';
 import ClientRooms from '../pages/Client/Rooms';
+import ClientReservationCreate from '../pages/Client/ReservationCreate';
 
 const AppRouter = () => {
     const location = useLocation();
@@ -90,6 +91,7 @@ const AppRouter = () => {
                     <Route path="/client/dashboard"    element={<ClientDashboard />} />
                     <Route path="/client/rooms"        element={<ClientRooms />} />
                     <Route path="/client/reservations" element={<ClientReservations />} />
+                    <Route path="/client/reservations/create" element={<ClientReservationCreate />} />
                     <Route path="/client/profile"      element={<ClientProfile />} />
                     <Route path="/client/ratings"      element={<ClientRatings />} />
                 </Route>

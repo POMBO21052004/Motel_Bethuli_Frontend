@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     BedDouble, Loader2, ChevronDown, ChevronUp,
-    Clock, CheckCircle2, Wrench, Users, X, AlertCircle, MessageCircle,
-    CalendarCheck2, Star
+    Clock, Wrench, Users, X
 } from 'lucide-react';
 import clientRoomService from '../../services/client/roomService';
-import reservationService from '../../services/client/reservationService';
 import { getImageUrl } from '../../utils/getImageUrl.jsx';
 
 const T = {
@@ -238,11 +237,10 @@ function RoomDetailCard({ room, onBook }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function ClientRooms() {
-    const [groups, setGroups]         = useState([]);
-    const [loading, setLoading]       = useState(true);
-    const [error, setError]           = useState('');
-    const [bookingRoom, setBookingRoom] = useState(null);
-    const [successRes, setSuccessRes] = useState(null);
+    const navigate = useNavigate();
+    const [groups, setGroups]   = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError]     = useState('');
 
     useEffect(() => {
         clientRoomService.index()
@@ -251,9 +249,7 @@ export default function ClientRooms() {
             .finally(() => setLoading(false));
     }, []);
 
-    const handleSuccess = (res) => { setBookingRoom(null); setSuccessRes(res); };
-
-    const totalRooms    = groups.reduce((s, g) => s + g.rooms.length, 0);
+    const totalRooms     = groups.reduce((s, g) => s + g.rooms.length, 0);
     const availableCount = groups.reduce((s, g) => s + g.rooms.filter(r => !r.is_occupied_now && (r.status?.value ?? r.status) !== 'maintenance').length, 0);
 
     if (loading) return <div className="flex justify-center py-24"><Loader2 className="h-8 w-8 animate-spin text-amber-500" /></div>;
@@ -303,14 +299,10 @@ export default function ClientRooms() {
             ) : (
                 <div className="space-y-4">
                     {groups.map(group => (
-                        <FloorGroup key={group.floor} group={group} onBook={setBookingRoom} />
+                        <FloorGroup key={group.floor} group={group} onBook={(room) => navigate(`/client/reservations/create?room_id=${room.id}`)} />
                     ))}
                 </div>
             )}
-
-            {/* Modals */}
-            {bookingRoom && <BookingModal room={bookingRoom} onClose={() => setBookingRoom(null)} onSuccess={handleSuccess} />}
-            {successRes  && <SuccessModal reservation={successRes} onClose={() => setSuccessRes(null)} />}
         </div>
     );
 }

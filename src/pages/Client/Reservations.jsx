@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CalendarDays, Loader2, Star, CheckCircle2, MessageCircle, AlertCircle, X } from 'lucide-react';
 import { useClientReservations } from '../../hooks/useClientReservations';
 import { ReservationModel, ReservationStatus } from '../../models/ReservationModel';
@@ -42,10 +43,15 @@ export default function ClientReservations() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <p className="text-sm font-semibold text-amber-600">Réservations</p>
-                <h1 className="text-3xl font-black text-slate-900 dark:text-white">Mes réservations</h1>
-                <p className="mt-1 text-sm text-slate-500">Consultez l'historique et l'état de vos séjours.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <p className="text-sm font-semibold text-amber-600">Réservations</p>
+                    <h1 className="text-3xl font-black text-slate-900 dark:text-white">Mes réservations</h1>
+                    <p className="mt-1 text-sm text-slate-500">Consultez l'historique et l'état de vos séjours.</p>
+                </div>
+                <Link to="/client/reservations/create" className="shrink-0 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-black hover:bg-amber-600 transition-colors shadow-lg shadow-amber-200">
+                    + Nouvelle réservation
+                </Link>
             </div>
             
             {error && <div className="rounded-xl bg-red-50 p-4 text-red-700 font-medium text-sm">{error}</div>}

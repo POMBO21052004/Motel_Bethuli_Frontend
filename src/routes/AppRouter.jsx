@@ -59,7 +59,9 @@ import ClientReservations from '../pages/Client/Reservations';
 import ClientProfile from '../pages/Client/Profile';
 import ClientRatings from '../pages/Client/Ratings';
 import ClientRooms from '../pages/Client/Rooms';
+import ClientRoomShow from '../pages/Client/RoomShow';
 import ClientReservationCreate from '../pages/Client/ReservationCreate';
+import ClientReservationShow from '../pages/Client/ReservationShow';
 
 const AppRouter = () => {
     const location = useLocation();
@@ -90,8 +92,10 @@ const AppRouter = () => {
                 <Route element={<LayoutClient />}>
                     <Route path="/client/dashboard"    element={<ClientDashboard />} />
                     <Route path="/client/rooms"        element={<ClientRooms />} />
+                    <Route path="/client/rooms/:id"    element={<ClientRoomShow />} />
                     <Route path="/client/reservations" element={<ClientReservations />} />
                     <Route path="/client/reservations/create" element={<ClientReservationCreate />} />
+                    <Route path="/client/reservations/:id" element={<ClientReservationShow />} />
                     <Route path="/client/profile"      element={<ClientProfile />} />
                     <Route path="/client/ratings"      element={<ClientRatings />} />
                 </Route>

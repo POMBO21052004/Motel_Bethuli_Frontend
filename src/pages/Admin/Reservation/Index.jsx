@@ -12,7 +12,7 @@ const T = {
     surfaceVariant: '#fef3c7', secondary: '#b45309', error: '#ef4444',
 };
 
-const statuses = ['all', ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CANCELLED, ReservationStatus.COMPLETED];
+const statuses = ['all', ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CANCELLED];
 
 const getStatusBadge = (status) => {
     switch (status) {
@@ -89,7 +89,7 @@ function RoomGroup({ group, navigate, updateStatus, statuses }) {
                             </p>
                         )}
                         <p className="text-[10px] uppercase font-bold text-slate-400 mt-1">
-                            {room?.floor === 0 ? 'Rez-de-chaussée' : `${room?.floor}${room?.floor === 1 ? 'er' : 'ème'} Étage`}
+                            {room?.floor === 0 ? 'Rez-de-chaussée' : room?.floor !== undefined ? `${room.floor}${room.floor === 1 ? 'er' : 'ème'} Étage` : 'Étage inconnu'}
                         </p>
                     </div>
                 </div>

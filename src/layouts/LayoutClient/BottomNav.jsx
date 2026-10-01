@@ -6,13 +6,13 @@ const navItems = [
     { path: '/client/dashboard',    icon: Home,        label: 'Accueil' },
     { path: '/client/rooms',        icon: BedDouble,   label: 'Chambres' },
     { path: '/client/reservations', icon: CalendarDays, label: 'Séjours' },
-    { path: '/client/ratings',      icon: Star,        label: 'Avis' },
+    // { path: '/client/ratings',      icon: Star,        label: 'Avis' },
     { path: '/client/profile',      icon: User,        label: 'Profil' },
 ];
 
 export default function BottomNav() {
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 z-40 transition-colors duration-300"
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 z-40 transition-colors duration-300"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
             <div className="flex items-stretch justify-around">
@@ -22,7 +22,7 @@ export default function BottomNav() {
                         to={item.path}
                         className={({ isActive }) => `
                             flex flex-col items-center justify-center flex-1 py-2.5 gap-1 relative transition-colors duration-200
-                            ${isActive ? 'text-amber-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}
+                            ${isActive ? 'text-amber-500' : 'text-slate-400 hover:text-slate-600'}
                         `}
                     >
                         {({ isActive }) => (

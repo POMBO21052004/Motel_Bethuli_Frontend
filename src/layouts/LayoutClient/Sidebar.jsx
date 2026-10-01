@@ -96,7 +96,7 @@ export default function Sidebar() {
             icon: <Users className="w-[18px] h-[18px]" />,
             items: [
                 { label: 'Mon Profil', icon: <UserSearch className="w-[18px] h-[18px]" />, path: '/client/profile' },
-                { label: 'Mes Avis', icon: <Star className="w-[18px] h-[18px]" />, path: '/client/ratings' },
+                // { label: 'Mes Avis', icon: <Star className="w-[18px] h-[18px]" />, path: '/client/ratings' },
             ],
             show: true
         },

@@ -335,7 +335,7 @@ export default function AdminDashboard() {
                                                 <div>
                                                     <p className="text-sm text-slate-800 font-bold">{res.room?.name}</p>
                                                     <p className="text-[10px] uppercase font-bold text-slate-400 mt-0.5">
-                                                        {res.room?.floor === 0 ? 'Rez-de-chaussée' : `${res.room?.floor}${res.room?.floor === 1 ? 'er' : 'ème'} Étage`}
+                                                        {res.room?.floor === 0 ? 'Rez-de-chaussée' : res.room?.floor !== undefined ? `${res.room.floor}${res.room.floor === 1 ? 'er' : 'ème'} Étage` : 'Étage inconnu'}
                                                     </p>
                                                 </div>
                                             </div>

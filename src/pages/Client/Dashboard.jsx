@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     Activity, BedDouble, CalendarDays, CalendarCheck2, Clock3,
     Star, ChevronRight, MessageCircle, AlertTriangle, CheckCircle2,
-    Loader2, ArrowRight, Hotel
+    Loader2, ArrowRight, Hotel, Users, MapPin
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import dashboardService from '../../services/client/dashboardService';
@@ -13,7 +13,6 @@ import { ReservationModel, ReservationStatus } from '../../models/ReservationMod
 const T = {
     bg: '#f8fafc', cardBg: '#ffffff', primary: '#f59e0b',
     onSurface: '#0f172a', onSurfaceVariant: '#475569',
-    outline: '#94a3b8', outlineVariant: '#cbd5e1',
 };
 
 function getGreeting() {
@@ -32,61 +31,155 @@ function StatCard({ icon: Icon, label, value, color = 'amber', accent }) {
         rose:    'bg-rose-50 text-rose-600 border-rose-100',
     };
     return (
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${colors[color]}`}>
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+            <div>
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">{label}</p>
+                <div className="flex items-baseline gap-2 mt-1">
+                    <p className="text-2xl font-black text-slate-900">{value ?? 0}</p>
+                    {accent && <p className="text-[10px] font-bold text-slate-400 hidden sm:block">{accent}</p>}
+                </div>
+            </div>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${colors[color]}`}>
                 <Icon className="w-5 h-5" />
             </div>
-            <p className="mt-4 text-xs font-black uppercase tracking-wider text-slate-400">{label}</p>
-            <p className="mt-1 text-3xl font-black text-slate-900">{value ?? 0}</p>
-            {accent && <p className="mt-1 text-[10px] font-bold text-slate-400">{accent}</p>}
         </div>
     );
 }
 
-// ── Room Card (mini) ──────────────────────────────────────────────────────────
-function RoomCard({ room, onBook }) {
+// ── Room Card (style public) ───────────────────────────────────────────────────
+function RoomCard({ room }) {
+    const imageUrl = room.primary_image?.image_path
+        ? getImageUrl(room.primary_image.image_path)
+        : null;
+
     return (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-lg transition-all group flex flex-col">
-            <div className="relative h-36 bg-slate-100 overflow-hidden shrink-0">
-                {room.primary_image?.image_path ? (
+        <Link
+            to={`/client/rooms/${room.id}`}
+            className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
+        >
+            {/* Image */}
+            <div className="relative h-44 shrink-0 overflow-hidden bg-slate-100">
+                {imageUrl ? (
                     <img
-                        src={getImageUrl(room.primary_image.image_path)}
+                        src={imageUrl}
                         alt={room.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
                         <BedDouble className="w-10 h-10 text-slate-300" />
                     </div>
                 )}
-                {room.is_occupied_now ? (
-                    <div className="absolute top-2 left-2 bg-red-500/90 backdrop-blur text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                        Occupée
+
+                {/* Étage badge */}
+                <div className="absolute top-3 left-3">
+                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md bg-white/90 text-amber-600">
+                        {room.floor === 0 ? 'RDC' : `Étage ${room.floor}`}
+                    </span>
+                </div>
+
+                {/* Prix */}
+                <div className="absolute top-2 right-2">
+                    <div className="flex items-baseline gap-0.5 bg-amber-500 text-white px-2.5 py-1 rounded-t-lg rounded-br-lg rounded-bl-sm shadow-sm">
+                        <span className="text-[13px] font-black">{Number(room.price_per_day).toLocaleString('fr-FR')}</span>
+                        <span className="text-[9px] font-bold opacity-80">FCFA</span>
                     </div>
+                </div>
+
+                {/* Status */}
+                <div className="absolute bottom-3 left-3">
+                    {room.is_occupied_now ? (
+                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-500/90 text-white backdrop-blur-md shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Occupée
+                        </span>
+                    ) : (
+                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/90 text-white backdrop-blur-md shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white" /> Disponible
+                        </span>
+                    )}
+                </div>
+
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+            </div>
+
+            {/* Content */}
+            <div className="p-4 flex flex-col flex-1">
+                <h4 className="text-base font-bold text-slate-900 leading-tight line-clamp-1 group-hover:text-amber-500 transition-colors mb-1">
+                    {room.name}
+                </h4>
+                <p className="text-amber-500 text-xs font-bold flex items-center gap-0.5 mb-2">
+                    <MapPin className="w-3.5 h-3.5" /> Motel Bethuli
+                </p>
+                <p className="text-slate-500 text-[12px] leading-relaxed line-clamp-2 flex-1">
+                    {room.description_fr || 'Une chambre confortable au Motel Bethuli.'}
+                </p>
+                <div className="mt-3 pt-3 flex justify-between items-center border-t border-slate-50">
+                    <span className="flex items-center gap-1 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                        <Users className="w-3 h-3" /> {room.capacity} Pers.
+                    </span>
+                    <span className="text-xs font-black text-amber-500 flex items-center gap-1 group-hover:gap-2 transition-all">
+                        Réserver <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                    </span>
+                </div>
+            </div>
+        </Link>
+    );
+}
+
+// ── Reservation Card (prochain séjour) ────────────────────────────────────────
+function NextStayCard({ reservation }) {
+    return (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col min-w-0">
+            {/* Image */}
+            <div className="h-32 bg-slate-100 relative shrink-0 overflow-hidden">
+                {reservation.room?.primary_image?.image_path ? (
+                    <img src={getImageUrl(reservation.room.primary_image.image_path)} alt={reservation.room?.name} className="w-full h-full object-cover" />
                 ) : (
-                    <div className="absolute top-2 left-2 bg-emerald-500/90 backdrop-blur text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                        Disponible
+                    <div className="w-full h-full flex items-center justify-center">
+                        <BedDouble className="w-10 h-10 text-slate-300" />
                     </div>
                 )}
-            </div>
-            <div className="p-4 flex flex-col flex-1">
-                <p className="font-black text-slate-900 truncate">{room.name}</p>
-                <p className="text-[11px] text-slate-500 line-clamp-2 flex-1 mt-0.5">{room.description_fr}</p>
-                <div className="flex items-center justify-between mt-3">
-                    <div>
-                        <span className="text-sm font-black text-slate-800">{Number(room.price_per_day).toLocaleString('fr-FR')}</span>
-                        <span className="text-[10px] text-slate-400 ml-1 font-bold">FCFA/nuit</span>
-                    </div>
-                    <button
-                        onClick={() => onBook(room)}
-                        disabled={room.is_occupied_now}
-                        className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-amber-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                        Réserver
-                    </button>
+                <div className="absolute bottom-2 left-2">
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full shadow-md ${ReservationModel.getStatusColor(reservation.status?.value ?? reservation.status)}`}>
+                        {ReservationModel.getStatusLabel(reservation.status?.value ?? reservation.status)}
+                    </span>
                 </div>
+            </div>
+
+            {/* Info */}
+            <div className="p-4 flex flex-col gap-3 flex-1">
+                <div>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Chambre</p>
+                    <p className="font-black text-slate-900 truncate">{reservation.room?.name}</p>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Arrivée</p>
+                        <p className="font-black text-slate-800">{new Date(reservation.reservation_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
+                        <p className="font-bold text-amber-500 text-[10px]">12:00</p>
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Départ</p>
+                        <p className="font-black text-slate-800">{new Date(reservation.end_date || reservation.reservation_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
+                        <p className="font-bold text-amber-500 text-[10px]">12:00</p>
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Montant</p>
+                        <p className="font-black text-slate-800 text-[11px]">{Number(reservation.total_price).toLocaleString('fr-FR')}</p>
+                        <p className="font-bold text-slate-400 text-[10px]">FCFA</p>
+                    </div>
+                </div>
+                {(reservation.status?.value ?? reservation.status) === ReservationStatus.PENDING && (
+                    <button
+                        onClick={() => {
+                            const text = encodeURIComponent(`Bonjour, je souhaite confirmer ma réservation pour la chambre "${reservation.room?.name}".`);
+                            window.open(`https://wa.me/237600000000?text=${text}`, '_blank');
+                        }}
+                        className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#25D366]/10 text-[#25D366] font-bold text-xs hover:bg-[#25D366]/20 transition-colors mt-auto"
+                    >
+                        <MessageCircle className="w-3.5 h-3.5" /> Confirmer via WhatsApp
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -109,6 +202,17 @@ export default function ClientDashboard() {
         return () => clearInterval(t);
     }, []);
 
+    // -- Slides Carousel --
+    const [currentSlide, setCurrentSlide] = useState(0);
+    
+    // We construct heroSlides array inside render, so length is always constant (6)
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentSlide(prev => (prev + 1) % 6);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, []);
+
     if (loading) {
         return (
             <div className="flex justify-center py-24">
@@ -124,39 +228,75 @@ export default function ClientDashboard() {
     const timeStr = currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const dateStr = currentTime.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
+    // Upcoming reservations: next_reservation + recent ones that are upcoming
+    const upcomingReservations = next_reservation ? [next_reservation] : [];
+
+    const prenom = clientUser?.prenom || 'Client';
+    
+    const heroSlides = [
+        {
+            title: `Bienvenue, ${prenom} !`,
+            subtitle: "Heureux de vous revoir dans votre espace personnel.",
+            image: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+        },
+        {
+            title: "Votre confort, notre priorité",
+            subtitle: "Réservez facilement et suivez l'historique de vos séjours en temps réel.",
+            image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+        },
+        {
+            title: `${prenom}, prêt pour un nouveau séjour ?`,
+            subtitle: "Découvrez nos nouvelles chambres et suites élégantes, équipées pour votre repos.",
+            image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+        },
+        {
+            title: "Gérez vos réservations en un clic",
+            subtitle: "Validation, suivi et détails de votre séjour à portée de main.",
+            image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+        },
+        {
+            title: `Merci de votre confiance, ${prenom}`,
+            subtitle: "Profitez de l'excellence de nos services depuis cet espace dédié.",
+            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+        },
+        {
+            title: "Un service 5 étoiles au Motel Bethuli",
+            subtitle: "Notre équipe dévouée est là pour vous garantir un séjour inoubliable.",
+            image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+        }
+    ];
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-6" style={{ color: T.onSurface }}>
 
-            {/* ── HERO ──────────────────────────────────────────────────────── */}
-            <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-2xl" style={{ background: T.onSurface }}>
-                <div className="absolute -right-10 -top-10 opacity-5">
-                    <Hotel size={240} className="rotate-12" />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 h-px opacity-20"
-                    style={{ background: `linear-gradient(90deg, transparent, ${T.primary}, transparent)` }} />
-
-                <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2.5 rounded-xl border" style={{ background: `${T.primary}25`, borderColor: `${T.primary}40` }}>
-                                <Hotel className="w-6 h-6" style={{ color: T.primary }} />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: T.primary }}>
-                                    Motel Bethuli • Espace Client
-                                </p>
-                                <p className="text-xs text-slate-400">{dateStr} — {timeStr}</p>
-                            </div>
-                        </div>
-                        <h1 className="text-3xl font-black italic tracking-tight">
-                            {getGreeting()}, {clientUser?.prenom || 'Client'} !
-                        </h1>
-                        <p className="text-slate-400 text-sm mt-1 max-w-lg">
-                            Bienvenue dans votre espace personnel. Gérez vos séjours et découvrez nos chambres.
-                        </p>
+            {/* ── HERO CAROUSEL ──────────────────────────────────────────────────────── */}
+            <div className="relative overflow-hidden rounded-3xl min-h-[350px] shadow-2xl flex flex-col justify-between">
+                {/* Background Slides */}
+                {heroSlides.map((slide, idx) => (
+                    <div
+                        key={idx}
+                        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100 z-0' : 'opacity-0 z-0'}`}
+                    >
+                        <img src={slide.image} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-900/30" />
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 shrink-0">
-                        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur-sm ${cniVerified ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-amber-500/30 bg-amber-500/10'}`}>
+                ))}
+
+                {/* Top Overlay: Identity, Date, Badge */}
+                <div className="relative z-10 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl border bg-amber-500/25 border-amber-500/40 backdrop-blur-sm">
+                            <Hotel className="w-6 h-6 text-amber-500" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">
+                                Motel Bethuli • Espace Client
+                            </p>
+                            <p className="text-xs text-slate-300 font-medium">{dateStr} — {timeStr}</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur-md ${cniVerified ? 'border-emerald-500/50 bg-emerald-500/20' : 'border-amber-500/50 bg-amber-500/20'}`}>
                             {cniVerified
                                 ? <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                                 : <AlertTriangle className="w-4 h-4 text-amber-400" />}
@@ -166,13 +306,49 @@ export default function ClientDashboard() {
                         </div>
                         <Link
                             to="/client/rooms"
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-lg"
-                            style={{ background: T.primary, color: '#fff' }}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-lg bg-amber-500 text-white hover:bg-amber-600"
                         >
                             <BedDouble className="w-4 h-4" /> Voir les chambres
                         </Link>
                     </div>
                 </div>
+
+                {/* Bottom Overlay: Animated Text */}
+                <div className="relative z-10 p-6 sm:p-8 mt-auto">
+                    <div className="max-w-2xl min-h-[100px]">
+                        <h1 
+                            key={`title-${currentSlide}`}
+                            className="text-3xl sm:text-4xl lg:text-5xl font-serif font-extrabold tracking-tight text-white mb-2"
+                            style={{ animation: 'fadeSlideUp 0.8s ease-out' }}
+                        >
+                            {heroSlides[currentSlide].title}
+                        </h1>
+                        <p 
+                            key={`sub-${currentSlide}`}
+                            className="text-slate-300 text-sm sm:text-base font-medium"
+                            style={{ animation: 'fadeSlideUp 1s ease-out 0.2s both' }}
+                        >
+                            {heroSlides[currentSlide].subtitle}
+                        </p>
+                    </div>
+                    {/* Dots indicator */}
+                    <div className="flex gap-2 mt-6">
+                        {heroSlides.map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setCurrentSlide(idx)}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'bg-amber-500 w-6' : 'bg-white/30 hover:bg-white/60 w-1.5'}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                <style>{`
+                    @keyframes fadeSlideUp {
+                        from { opacity: 0; transform: translateY(15px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                `}</style>
             </div>
 
             {/* ── ALERTE CNI ────────────────────────────────────────────────── */}
@@ -197,74 +373,37 @@ export default function ClientDashboard() {
                 <StatCard icon={Star}           label="Avis déposés" value={stats?.ratings_count}  color="indigo"  accent="Notes laissées" />
             </div>
 
-            {/* ── PROCHAIN SÉJOUR ───────────────────────────────────────────── */}
-            {next_reservation ? (
+            {/* ── PROCHAIN SÉJOUR — seulement si existe, scroll horizontal si 3+ ── */}
+            {upcomingReservations.length > 0 && (
                 <div>
-                    <h2 className="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
-                        <CalendarCheck2 className="w-5 h-5 text-amber-500" /> Prochain séjour
-                    </h2>
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col md:flex-row">
-                        <div className="md:w-56 h-44 md:h-auto bg-slate-100 shrink-0 relative overflow-hidden">
-                            {next_reservation.room?.primary_image?.image_path ? (
-                                <img src={getImageUrl(next_reservation.room.primary_image.image_path)} alt={next_reservation.room?.name} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <BedDouble className="w-12 h-12 text-slate-300" />
-                                </div>
-                            )}
-                            <div className="absolute bottom-3 left-3">
-                                <span className={`text-[10px] font-black px-2.5 py-1 rounded-full shadow-md ${ReservationModel.getStatusColor(next_reservation.status?.value ?? next_reservation.status)}`}>
-                                    {ReservationModel.getStatusLabel(next_reservation.status?.value ?? next_reservation.status)}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="p-6 flex flex-col justify-between flex-1">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Chambre</p>
-                                <h3 className="text-xl font-black text-slate-900">{next_reservation.room?.name}</h3>
-                                {next_reservation.room?.description_fr && (
-                                    <p className="text-sm text-slate-500 mt-1 line-clamp-2">{next_reservation.room.description_fr}</p>
-                                )}
-                            </div>
-                            <div className="mt-4 grid grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Arrivée</p>
-                                    <p className="font-black text-slate-900">{new Date(next_reservation.reservation_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
-                                    <p className="text-xs font-bold text-amber-500">{next_reservation.start_time?.slice(0, 5)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Départ</p>
-                                    <p className="font-black text-slate-900">{new Date(next_reservation.end_date || next_reservation.reservation_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
-                                    <p className="text-xs font-bold text-amber-500">{next_reservation.end_time?.slice(0, 5)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Montant</p>
-                                    <p className="font-black text-slate-900">{Number(next_reservation.total_price).toLocaleString('fr-FR')} <span className="text-[10px] text-slate-400">FCFA</span></p>
-                                </div>
-                                <div className="flex items-end">
-                                    {(next_reservation.status?.value ?? next_reservation.status) === ReservationStatus.PENDING && (
-                                        <button
-                                            onClick={() => {
-                                                const text = encodeURIComponent(`Bonjour, je souhaite confirmer ma réservation pour la chambre "${next_reservation.room?.name}".`);
-                                                window.open(`https://wa.me/237600000000?text=${text}`, '_blank');
-                                            }}
-                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] font-bold text-xs hover:bg-[#25D366]/20 transition-colors"
-                                        >
-                                            <MessageCircle className="w-4 h-4" /> WhatsApp
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                            <CalendarCheck2 className="w-5 h-5 text-amber-500" /> Prochain séjour
+                        </h2>
+                        <Link to="/client/reservations" className="flex items-center gap-1.5 text-xs font-bold text-amber-600 hover:text-amber-700 transition-colors">
+                            Tout voir <ChevronRight className="w-3.5 h-3.5" />
+                        </Link>
                     </div>
-                </div>
-            ) : (
-                <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center">
-                    <CalendarDays className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-                    <p className="font-black text-slate-400">Aucun séjour à venir</p>
-                    <Link to="/client/reservations/create" className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors">
-                        Faire une réservation <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <div className="flex overflow-x-auto snap-x gap-4 pb-2" style={{ scrollbarWidth: 'none' }}>
+                        {upcomingReservations.map(r => (
+                            <div key={r.id} className="w-full md:w-[calc(50%-0.5rem)] shrink-0 snap-start">
+                                <NextStayCard reservation={r} />
+                            </div>
+                        ))}
+                        {upcomingReservations.length === 1 && (
+                            <div className="hidden md:flex w-[calc(50%-0.5rem)] shrink-0 rounded-2xl border-2 border-dashed border-slate-200 hover:border-amber-400 bg-slate-50 items-center justify-center transition-colors group cursor-pointer"
+                                 onClick={() => navigate('/client/rooms')}
+                            >
+                                <div className="text-center">
+                                    <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                                        <BedDouble className="w-6 h-6 text-amber-600" />
+                                    </div>
+                                    <p className="font-bold text-slate-700 text-sm">Ajouter un séjour</p>
+                                    <p className="text-xs text-slate-400 mt-1">Découvrez nos chambres</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -280,15 +419,18 @@ export default function ClientDashboard() {
                         Tout voir <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {(available_rooms || []).map(room => (
-                        <RoomCard
-                            key={room.id}
-                            room={room}
-                            onBook={(r) => navigate(`/client/reservations/create?room_id=${r.id}`)}
-                        />
+                {/* 4 par ligne sur PC, max 4 affichées */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {(available_rooms || []).slice(0, 4).map(room => (
+                        <RoomCard key={room.id} room={room} />
                     ))}
                 </div>
+                {available_rooms?.length === 0 && (
+                    <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
+                        <BedDouble className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                        <p className="font-black text-slate-400 text-sm">Aucune chambre disponible pour le moment</p>
+                    </div>
+                )}
             </div>
 
             {/* ── ACTIVITÉ RÉCENTE ──────────────────────────────────────────── */}
@@ -313,7 +455,7 @@ export default function ClientDashboard() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="font-bold text-slate-900 truncate">{res.room?.name}</p>
-                                    <p className="text-[11px] text-slate-500">{new Date(res.reservation_date).toLocaleDateString('fr-FR')} · {res.start_time?.slice(0, 5)}</p>
+                                    <p className="text-[11px] text-slate-500">{new Date(res.reservation_date).toLocaleDateString('fr-FR')} → {new Date(res.end_date || res.reservation_date).toLocaleDateString('fr-FR')}</p>
                                 </div>
                                 <span className={`shrink-0 text-[10px] font-black px-2 py-1 rounded-full ${ReservationModel.getStatusColor(res.status?.value ?? res.status)}`}>
                                     {ReservationModel.getStatusLabel(res.status?.value ?? res.status)}

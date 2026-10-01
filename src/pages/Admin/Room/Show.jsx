@@ -287,6 +287,9 @@ export default function RoomShow() {
                                                 <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${res.status === 'confirmed' ? 'bg-green-100 text-green-700' : res.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-600'}`}>
                                                     {res.status}
                                                 </span>
+                                                {res.status === 'confirmed' && res.reservation_date <= new Date().toISOString().split('T')[0] && (res.end_date || res.reservation_date) >= new Date().toISOString().split('T')[0] && (
+                                                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">En cours</span>
+                                                )}
                                             </div>
                                             <div className="text-xs flex items-center gap-2" style={{ color: T.onSurfaceVariant }}>
                                                 <CalendarDays className="w-3.5 h-3.5" />
@@ -379,40 +382,41 @@ export default function RoomShow() {
                                 </h2>
                                 <div className="flex items-center gap-1">
                                     <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                                    <span className="font-black text-sm" style={{ color: T.onSurface }}>4.8</span>
+                                    <span className="font-black text-sm" style={{ color: T.onSurface }}>
+                                        {room.avg_rating ? Number(room.avg_rating).toFixed(1) : '-'}
+                                    </span>
                                 </div>
                             </div>
                             
                             <div className="space-y-3">
-                                {/* Simulation d'avis */}
-                                <div className="p-3 rounded-xl bg-slate-50 border" style={{ borderColor: `${T.outlineVariant}30` }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="font-bold text-xs" style={{ color: T.onSurface }}>John Doe</div>
-                                        <div className="flex text-amber-400">
-                                            {[...Array(5)].map((_, i) => <Star key={i} className="w-2.5 h-2.5 fill-current" />)}
+                                {room.ratings && room.ratings.length > 0 ? (
+                                    room.ratings.slice(0, 3).map((rating, idx) => (
+                                        <div key={idx} className="p-3 rounded-xl bg-slate-50 border" style={{ borderColor: `${T.outlineVariant}30` }}>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="font-bold text-xs" style={{ color: T.onSurface }}>
+                                                    {rating.client?.prenom} {rating.client?.nom}
+                                                </div>
+                                                <div className="flex text-amber-400">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} className={`w-2.5 h-2.5 ${i < rating.rating ? 'fill-current' : 'text-slate-300'}`} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <p className="text-[11px] leading-relaxed line-clamp-3" style={{ color: T.onSurfaceVariant }}>
+                                                "{rating.comment || 'Aucun commentaire.'}"
+                                            </p>
                                         </div>
-                                    </div>
-                                    <p className="text-[11px] leading-relaxed line-clamp-3" style={{ color: T.onSurfaceVariant }}>
-                                        "Chambre très propre et confortable. Le service était impeccable. Je recommande vivement !"
-                                    </p>
-                                </div>
-                                <div className="p-3 rounded-xl bg-slate-50 border" style={{ borderColor: `${T.outlineVariant}30` }}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="font-bold text-xs" style={{ color: T.onSurface }}>Alice M.</div>
-                                        <div className="flex text-amber-400">
-                                            {[...Array(4)].map((_, i) => <Star key={i} className="w-2.5 h-2.5 fill-current" />)}
-                                            <Star className="w-2.5 h-2.5" />
-                                        </div>
-                                    </div>
-                                    <p className="text-[11px] leading-relaxed line-clamp-3" style={{ color: T.onSurfaceVariant }}>
-                                        "Très bon séjour, lit spacieux. Petit bémol sur la vue mais globalement satisfait."
-                                    </p>
-                                </div>
+                                    ))
+                                ) : (
+                                    <p className="text-xs text-slate-500 italic text-center py-4">Aucun avis pour le moment.</p>
+                                )}
                             </div>
                             
-                            <button className="w-full mt-3 py-2 text-xs font-bold text-center rounded-lg hover:bg-slate-50 transition-colors" style={{ color: T.primary }}>
-                                Voir tous les avis
-                            </button>
+                            {room.ratings && room.ratings.length > 3 && (
+                                <button className="w-full mt-3 py-2 text-xs font-bold text-center rounded-lg hover:bg-slate-50 transition-colors" style={{ color: T.primary }}>
+                                    Voir tous les avis ({room.ratings_count})
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -35,6 +35,9 @@ const roomService = {
 
     // Détail public d'une chambre
     publicShow: (id) => api.get(`/rooms/${id}`),
+
+    // Vérification disponibilité publique (sans auth)
+    publicCheckAvailability: (params) => api.get('/rooms/check-availability', { params }),
 };
 
 export default roomService;

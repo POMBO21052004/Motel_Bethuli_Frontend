@@ -10,12 +10,6 @@ import roomService from '../../services/roomService';
 import reservationService from '../../services/client/reservationService';
 import { getImageUrl } from '../../utils/getImageUrl.jsx';
 
-const T = {
-    bg: '#f8fafc', cardBg: '#ffffff', primary: '#f59e0b',
-    onSurface: '#0f172a', onSurfaceVariant: '#475569',
-    outline: '#94a3b8', outlineVariant: '#cbd5e1',
-};
-
 export default function ClientReservationCreate() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -27,10 +21,17 @@ export default function ClientReservationCreate() {
     const [rooms, setRooms] = useState([]);
     const [loadingRooms, setLoadingRooms] = useState(true);
     
+    const todayStr = new Date().toISOString().split('T')[0];
+    const defaultEnd = (() => {
+        const d = new Date(todayStr);
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split('T')[0];
+    })();
+
     const [formData, setFormData] = useState({
         room_id: preselectedRoomId,
-        reservation_date: new Date().toISOString().split('T')[0],
-        end_date: new Date().toISOString().split('T')[0],
+        reservation_date: todayStr,
+        end_date: defaultEnd,
         start_time: '12:00',
         end_time: '12:00',
         total_price: 0,
@@ -40,6 +41,7 @@ export default function ClientReservationCreate() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [successRes, setSuccessRes] = useState(null);
+    const [availMsg, setAvailMsg] = useState(null); // { type: 'checking'|'success'|'error', text, price, days }
 
     useEffect(() => {
         roomService.publicIndex({ per_page: 100 })
@@ -50,22 +52,74 @@ export default function ClientReservationCreate() {
 
     const selectedRoom = rooms.find(r => r.id === formData.room_id);
 
-    // Mettre à jour le prix total basé sur la chambre sélectionnée (basique)
+    // Calculate nights for display
+    const nights = (() => {
+        const start = new Date(formData.reservation_date);
+        const end = new Date(formData.end_date);
+        const diff = Math.ceil((end - start) / 86400000);
+        return diff <= 0 ? 1 : diff;
+    })();
+
+    // Availability check: debounced, triggered when room/dates change
     useEffect(() => {
-        if (selectedRoom) {
-            setFormData(prev => ({ ...prev, total_price: selectedRoom.price_per_day }));
-        } else {
-            setFormData(prev => ({ ...prev, total_price: 0 }));
+        if (!formData.room_id || !formData.reservation_date || !formData.end_date) {
+            setAvailMsg(null);
+            return;
         }
-    }, [selectedRoom]);
+        if (formData.end_date < formData.reservation_date) {
+            setAvailMsg({ type: 'error', text: 'La date de départ doit être après la date d\'arrivée.' });
+            return;
+        }
+
+        setAvailMsg({ type: 'checking', text: 'Vérification de la disponibilité...' });
+        let cancelled = false;
+
+        const timer = setTimeout(async () => {
+            try {
+                const res = await reservationService.checkAvailability({
+                    room_id: formData.room_id,
+                    reservation_date: formData.reservation_date,
+                    end_date: formData.end_date,
+                });
+                if (cancelled) return;
+                const data = res.data;
+                if (data.available) {
+                    setAvailMsg({ type: 'success', text: data.message, price: data.price, days: data.days });
+                } else {
+                    setAvailMsg({ type: 'error', text: data.message });
+                }
+            } catch {
+                if (!cancelled) setAvailMsg(null);
+            }
+        }, 600);
+
+        return () => { cancelled = true; clearTimeout(timer); };
+    }, [formData.room_id, formData.reservation_date, formData.end_date]);
+
+    const getNextDay = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split('T')[0];
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+            const next = { ...prev, [name]: value };
+            if (name === 'reservation_date') {
+                const minEnd = getNextDay(value);
+                if (next.end_date <= value) {
+                    next.end_date = minEnd;
+                }
+            }
+            return next;
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (availMsg?.type === 'error' || availMsg?.type === 'checking') return;
         setError(null);
         setIsSubmitting(true);
         try {
@@ -87,21 +141,22 @@ export default function ClientReservationCreate() {
     if (!cniVerified && !successRes) {
         return (
             <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(-1)} className="p-2 bg-white rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
-                        <ArrowLeft className="w-5 h-5 text-slate-600" />
+                <div className="mb-6">
+                    <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-amber-600 transition-colors mb-4">
+                        <ArrowLeft className="w-4 h-4" /> Retour
                     </button>
-                    <h1 className="text-2xl font-black italic tracking-tight" style={{ color: T.onSurface }}>Nouvelle Réservation</h1>
+                    <h1 className="text-3xl font-serif font-extrabold text-slate-800">Nouvelle Réservation</h1>
+                    <div className="w-16 h-1 bg-amber-500 rounded-full mt-2"></div>
                 </div>
-                <div className="p-8 bg-white rounded-3xl border border-amber-200 shadow-xl text-center">
-                    <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <AlertTriangle className="w-10 h-10 text-amber-500" />
+                <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl text-center">
+                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                        <AlertTriangle className="w-8 h-8 text-amber-500" />
                     </div>
-                    <h2 className="text-2xl font-black text-amber-800 mb-2">Vérification requise</h2>
-                    <p className="text-amber-700 font-medium max-w-md mx-auto mb-8">
+                    <h2 className="text-xl font-bold text-amber-800 mb-2">Vérification requise</h2>
+                    <p className="text-amber-700 text-sm mb-6">
                         Pour des raisons de sécurité, votre identité doit être vérifiée avant de pouvoir effectuer une réservation. Veuillez soumettre votre Carte Nationale d'Identité.
                     </p>
-                    <Link to="/client/profile" className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white rounded-xl font-black hover:bg-amber-600 transition-colors shadow-lg shadow-amber-200">
+                    <Link to="/client/profile" className="inline-block w-full sm:w-auto px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-base shadow-md transition-colors">
                         Aller à mon profil
                     </Link>
                 </div>
@@ -112,23 +167,39 @@ export default function ClientReservationCreate() {
     if (successRes) {
         return (
             <div className="max-w-xl mx-auto py-10 animate-in zoom-in-95">
-                <div className="bg-white rounded-3xl p-10 text-center shadow-2xl border border-slate-100">
-                    <div className="w-24 h-24 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle className="w-12 h-12" />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+                    <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <CheckCircle className="w-10 h-10" />
                     </div>
-                    <h3 className="text-3xl font-black text-slate-900 mb-3">Réservation reçue !</h3>
-                    <p className="text-slate-500 mb-8">Votre demande est <strong className="text-amber-500">en attente</strong>. Pour valider rapidement votre séjour, veuillez contacter notre support sur WhatsApp.</p>
+                    <h3 className="text-2xl font-serif font-extrabold text-slate-800 mb-3">Réservation reçue !</h3>
+                    <div className="bg-green-50 border border-green-200 text-green-700 p-3 rounded-md text-sm mb-8 inline-block">
+                        Votre demande est en attente.
+                    </div>
+                    <p className="text-slate-600 mb-8">Pour valider rapidement votre séjour, veuillez contacter notre support sur WhatsApp.</p>
                     <div className="space-y-4">
                         <button 
                             onClick={() => {
-                                const text = encodeURIComponent(`Bonjour, je viens d'effectuer une réservation pour la chambre "${successRes.room?.name}" du ${successRes.reservation_date}. Pouvez-vous confirmer ?`);
+                                const text = encodeURIComponent(
+`Bonjour l'équipe du Motel Bethuli,
+
+Je vous contacte afin d'accélérer le processus de ma demande de réservation.
+Voici les détails de ma demande :
+
+*Objet :* Confirmation de réservation
+*Hôtel :* Motel Bethuli
+*Client :* ${user?.prenom} ${user?.nom}
+*Chambre :* ${successRes.room?.name} (Étage : ${successRes.room?.floor === 0 ? 'RDC' : successRes.room?.floor})
+*Date d'arrivée :* ${new Date(successRes.reservation_date).toLocaleDateString('fr-FR')}
+*Date de départ :* ${new Date(successRes.end_date).toLocaleDateString('fr-FR')}
+
+Merci d'avance pour votre prise en charge rapide !`);
                                 window.open(`https://wa.me/237600000000?text=${text}`, '_blank');
                             }}
-                            className="w-full py-4 rounded-xl bg-[#25D366] text-white font-black hover:bg-[#20bd5a] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/30"
+                            className="w-full px-6 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-bold text-base shadow-md transition-colors flex items-center justify-center gap-2"
                         >
-                            <MessageCircle className="w-6 h-6" /> Contacter le support sur WhatsApp
+                            <MessageCircle className="w-5 h-5" /> Contacter sur WhatsApp pour accélérer
                         </button>
-                        <button onClick={() => navigate('/client/reservations')} className="w-full py-4 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors">
+                        <button onClick={() => navigate('/client/reservations')} className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-amber-600 transition-colors">
                             Voir mes réservations
                         </button>
                     </div>
@@ -138,24 +209,20 @@ export default function ClientReservationCreate() {
     }
 
     return (
-        <div className="space-y-6 animate-in fade-in pb-10">
+        <div className="space-y-6 pb-10">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(-1)} className="p-2 bg-white rounded-xl shadow-sm hover:bg-slate-50 transition-colors" style={{ color: T.onSurface }}>
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <div>
-                        <h1 className="text-2xl font-black italic tracking-tight" style={{ color: T.onSurface }}>Nouvelle Réservation</h1>
-                        <p className="text-[10px] font-bold uppercase tracking-widest mt-1" style={{ color: T.primary }}>Formulaire de création</p>
-                    </div>
-                </div>
+            <div>
+                <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-amber-600 transition-colors mb-4">
+                    <ArrowLeft className="w-4 h-4" /> Retour
+                </button>
+                <h1 className="text-3xl font-serif font-extrabold text-slate-800">Nouvelle Réservation</h1>
+                <div className="w-16 h-1 bg-amber-500 rounded-full mt-2"></div>
             </div>
 
             {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl flex items-center gap-3">
+                <div className="bg-red-50 border-l-4 border-red-400 p-3 text-sm text-red-700 mb-6 flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 shrink-0" />
-                    <span className="font-bold text-sm">{error}</span>
+                    <span>{error}</span>
                 </div>
             )}
 
@@ -165,111 +232,111 @@ export default function ClientReservationCreate() {
                 <div className="lg:col-span-2 space-y-6">
                     
                     {/* 1. Choix de la chambre */}
-                    <div className="bg-white rounded-2xl border shadow-sm p-6" style={{ borderColor: `${T.outlineVariant}50` }}>
-                        <h2 className="text-lg font-bold border-b pb-4 mb-4" style={{ color: T.onSurface, borderColor: `${T.outlineVariant}50` }}>1. Choix de la Chambre</h2>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 className="text-lg font-bold text-slate-800 border-b border-gray-100 pb-3 mb-5">1. Choix de la Chambre</h2>
                         
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">Sélectionner une chambre</label>
-                            <select 
-                                name="room_id"
-                                value={formData.room_id}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-900 focus:border-amber-500 focus:bg-white outline-none transition-all"
-                            >
-                                <option value="">Choisir une chambre...</option>
-                                {rooms.map(r => (
-                                    <option key={r.id} value={r.id} disabled={r.is_occupied_now || r.status?.value === 'maintenance'}>
-                                        {r.name} {r.is_occupied_now ? '(Occupée)' : r.status?.value === 'maintenance' ? '(En maintenance)' : ''}
-                                    </option>
-                                ))}
-                            </select>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Sélectionner une chambre</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {rooms.map(r => {
+                                    const isSelected = r.id === formData.room_id;
+                                    const isDisabled = r.is_occupied_now || r.status?.value === 'maintenance';
+                                    return (
+                                        <div 
+                                            key={r.id} 
+                                            onClick={() => !isDisabled && setFormData(prev => ({...prev, room_id: r.id}))}
+                                            className={`cursor-pointer p-4 transition-colors ${isDisabled ? 'opacity-50 cursor-not-allowed bg-slate-50' : 'bg-white'} rounded-xl border-2 ${isSelected ? 'border-amber-500 bg-amber-50' : 'border-transparent hover:border-amber-400 border-slate-200 shadow-sm'}`}
+                                        >
+                                            <div className="font-bold text-slate-800 mb-1">{r.name}</div>
+                                            <div className="text-sm font-medium text-amber-600">{Number(r.price_per_day).toLocaleString('fr-FR')} FCFA</div>
+                                            {r.is_occupied_now && <div className="text-xs text-red-500 mt-2 font-medium">Occupée</div>}
+                                            {r.status?.value === 'maintenance' && <div className="text-xs text-red-500 mt-2 font-medium">Maintenance</div>}
+                                        </div>
+                                    )
+                                })}
+                            </div>
                         </div>
                     </div>
 
                     {/* 2. Période & Horaires */}
-                    <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-6" style={{ borderColor: `${T.outlineVariant}50` }}>
-                        <h2 className="text-lg font-bold border-b pb-4" style={{ color: T.onSurface, borderColor: `${T.outlineVariant}50` }}>2. Période & Horaires</h2>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 className="text-lg font-bold text-slate-800 border-b border-gray-100 pb-3 mb-5">2. Date du Séjour</h2>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div className="space-y-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm"><Calendar className="w-4 h-4 text-amber-500" /> Arrivée</h3>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Date</label>
-                                    <input 
-                                        type="date"
-                                        name="reservation_date"
-                                        value={formData.reservation_date}
-                                        onChange={handleInputChange}
-                                        min={new Date().toISOString().split('T')[0]}
-                                        required
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:border-amber-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Heure</label>
-                                    <input 
-                                        type="time"
-                                        name="start_time"
-                                        value={formData.start_time}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:border-amber-500"
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-amber-500" /> Date d'arrivée
+                                </label>
+                                <input 
+                                    type="date"
+                                    name="reservation_date"
+                                    value={formData.reservation_date}
+                                    onChange={handleInputChange}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    required
+                                    className="block w-full px-4 py-2.5 border border-gray-300 rounded-md text-sm focus:ring-amber-500 focus:border-amber-500 outline-none transition-colors"
+                                />
                             </div>
                             
-                            <div className="space-y-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm"><Clock className="w-4 h-4 text-amber-500" /> Départ</h3>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Date</label>
-                                    <input 
-                                        type="date"
-                                        name="end_date"
-                                        value={formData.end_date}
-                                        onChange={handleInputChange}
-                                        min={formData.reservation_date}
-                                        required
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:border-amber-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Heure</label>
-                                    <input 
-                                        type="time"
-                                        name="end_time"
-                                        value={formData.end_time}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:border-amber-500"
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-amber-500" /> Date de départ
+                                </label>
+                                <input 
+                                    type="date"
+                                    name="end_date"
+                                    value={formData.end_date}
+                                    onChange={handleInputChange}
+                                    min={getNextDay(formData.reservation_date)}
+                                    required
+                                    className="block w-full px-4 py-2.5 border border-gray-300 rounded-md text-sm focus:ring-amber-500 focus:border-amber-500 outline-none transition-colors"
+                                />
                             </div>
                         </div>
                     </div>
 
                     {/* 3. Notes & Validation */}
-                    <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-6" style={{ borderColor: `${T.outlineVariant}50` }}>
-                        <h2 className="text-lg font-bold border-b pb-4" style={{ color: T.onSurface, borderColor: `${T.outlineVariant}50` }}>3. Notes & Validation</h2>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 className="text-lg font-bold text-slate-800 border-b border-gray-100 pb-3 mb-5">3. Notes & Validation</h2>
                         
-                        <div>
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Demandes particulières (Optionnel)</label>
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Demandes particulières (Optionnel)</label>
                             <textarea 
                                 name="notes"
                                 value={formData.notes}
                                 onChange={handleInputChange}
-                                rows="3"
+                                rows={3}
                                 placeholder="Avez-vous des besoins spécifiques pour votre séjour ?"
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-500 focus:bg-white transition-all resize-none"
+                                className="block w-full px-4 py-2.5 border border-gray-300 rounded-md text-sm focus:ring-amber-500 focus:border-amber-500 outline-none transition-colors"
                             ></textarea>
                         </div>
 
-                        <div className="pt-4 flex justify-end">
+                        {/* Availability feedback */}
+                        {availMsg && formData.room_id && (
+                            <div className={`flex items-start gap-2.5 p-4 rounded-xl text-sm font-medium border mb-5 ${
+                                availMsg.type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                availMsg.type === 'error'   ? 'bg-red-50 text-red-600 border-red-200' :
+                                'bg-amber-50 text-amber-700 border-amber-200'
+                            }`}>
+                                {availMsg.type === 'checking' && <Loader2 className="w-4 h-4 animate-spin shrink-0 mt-0.5" />}
+                                {availMsg.type === 'success'  && <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" />}
+                                {availMsg.type === 'error'    && <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />}
+                                <div>
+                                    <p>{availMsg.text}</p>
+                                    {availMsg.type === 'success' && availMsg.price && (
+                                        <p className="mt-1 font-black text-emerald-800">
+                                            {availMsg.days} nuit{availMsg.days > 1 ? 's' : ''} · {Number(availMsg.price).toLocaleString('fr-FR')} FCFA
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex justify-end">
                             <button 
                                 type="submit"
-                                disabled={isSubmitting || !formData.room_id}
-                                className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-sm font-black text-white shadow-lg shadow-amber-200 disabled:opacity-50 hover:bg-amber-600 active:scale-95 transition-all flex items-center justify-center gap-2"
-                                style={{ background: T.primary }}
+                                disabled={isSubmitting || !formData.room_id || availMsg?.type === 'error' || availMsg?.type === 'checking'}
+                                className="w-full sm:w-auto px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-base shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
                                 {isSubmitting ? 'Enregistrement...' : 'Confirmer la Réservation'}
@@ -280,46 +347,48 @@ export default function ClientReservationCreate() {
                 </div>
 
                 {/* Right Sidebar - Room Info */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white rounded-2xl border shadow-sm p-6 sticky top-24" style={{ borderColor: `${T.outlineVariant}50` }}>
-                        <h2 className="text-lg font-black mb-4" style={{ color: T.onSurface }}>Détails de la Chambre</h2>
+                <div className="lg:col-span-1">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
+                        <h2 className="text-lg font-bold text-slate-800 border-b border-gray-100 pb-3 mb-5">Détails de la Chambre</h2>
                         
                         {!selectedRoom ? (
-                            <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                                <BedDouble className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                                <p className="text-sm font-bold text-slate-400">Veuillez sélectionner une chambre.</p>
+                            <div className="text-center py-10">
+                                <BedDouble className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                <p className="text-sm font-medium text-gray-500">Veuillez sélectionner une chambre pour voir les détails.</p>
                             </div>
                         ) : (
-                            <div className="space-y-5 animate-in fade-in duration-300">
-                                <div className="w-full aspect-video rounded-xl overflow-hidden bg-slate-100 shadow-sm">
+                            <div className="space-y-5">
+                                <div className="w-full aspect-video rounded-xl overflow-hidden bg-gray-100">
                                     {selectedRoom.primary_image?.image_path ? (
                                         <img src={getImageUrl(selectedRoom.primary_image.image_path)} alt={selectedRoom.name} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center"><BedDouble className="w-10 h-10 text-slate-300" /></div>
+                                        <div className="w-full h-full flex items-center justify-center"><BedDouble className="w-10 h-10 text-gray-300" /></div>
                                     )}
                                 </div>
                                 
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Nom</p>
-                                    <p className="font-black text-slate-900 text-lg">{selectedRoom.name}</p>
-                                    <p className="text-xs text-slate-500 mt-1 line-clamp-3">{selectedRoom.description_fr}</p>
+                                    <h3 className="font-bold text-slate-900 text-lg mb-1">{selectedRoom.name}</h3>
+                                    <p className="text-sm text-slate-500 line-clamp-3">{selectedRoom.description_fr}</p>
                                 </div>
                                 
-                                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Prix par jour</p>
-                                        <p className="font-black text-amber-600">{Number(selectedRoom.price_per_day).toLocaleString('fr-FR')} FCFA</p>
+                                        <p className="text-xs text-slate-500 mb-1 font-medium">Prix / Jour</p>
+                                        <p className="font-bold text-slate-800">{Number(selectedRoom.price_per_day).toLocaleString('fr-FR')} FCFA</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Capacité</p>
-                                        <p className="font-black text-slate-700">{selectedRoom.capacity} pers.</p>
+                                        <p className="text-xs text-slate-500 mb-1 font-medium">Capacité</p>
+                                        <p className="font-bold text-slate-800">{selectedRoom.capacity} pers.</p>
                                     </div>
                                 </div>
 
-                                <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl mt-6">
-                                    <p className="text-[10px] font-black uppercase tracking-wider text-amber-600 mb-1">Montant estimé</p>
-                                    <p className="text-2xl font-black text-slate-900">{Number(formData.total_price).toLocaleString('fr-FR')} <span className="text-sm text-slate-500">FCFA</span></p>
-                                    <p className="text-[10px] font-medium text-slate-500 mt-2 leading-tight">Le montant final pourra être ajusté en fonction de la durée exacte de votre séjour lors de votre arrivée.</p>
+                                <div className="pt-4 border-t border-gray-100 mt-2">
+                                    <p className="block text-sm font-medium text-slate-700 mb-1">Montant estimé</p>
+                                    <div className="text-3xl font-extrabold text-slate-800">
+                                        {Number(formData.total_price).toLocaleString('fr-FR')}
+                                        <span className="text-slate-400 text-base font-normal ml-1">FCFA</span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-2">Le montant final pourra être ajusté en fonction de la durée exacte de votre séjour lors de votre arrivée.</p>
                                 </div>
                             </div>
                         )}

@@ -1,16 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
     ArrowLeft, Users, BedDouble, MapPin, CalendarDays,
-    ChevronLeft, ChevronRight, Loader2, MessageCircle,
-    Star, CheckCircle, AlertTriangle
+    ChevronLeft, ChevronRight, Loader2, Star,
+    CheckCircle, AlertTriangle, Clock, MessageSquare, MessageCircle
 } from 'lucide-react';
+import reservationService from '../../services/client/reservationService';
 import roomService from '../../services/roomService';
+import { getImageUrl } from '../../utils/getImageUrl.jsx';
 import { RoomModel } from '../../models/RoomModel';
-import { getImageUrl } from '../../utils/getImageUrl';
 import { useAuth } from '../../contexts/AuthContext';
 
-const RoomDetail = () => {
+const formatDate = (d) =>
+    d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+
+function StarRow({ value, max = 5 }) {
+    return (
+        <div className="flex gap-0.5">
+            {Array.from({ length: max }).map((_, i) => (
+                <Star
+                    key={i}
+                    className={`w-4 h-4 ${i < value ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}`}
+                />
+            ))}
+        </div>
+    );
+}
+
+export default function ClientRoomShow() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -27,11 +44,28 @@ const RoomDetail = () => {
         return d.toISOString().split('T')[0];
     };
     const tomorrow = getNextDay(today);
+    
     const [form, setForm] = useState({ reservation_date: today, end_date: tomorrow });
-    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [availMsg, setAvailMsg] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [successData, setSuccessData] = useState(null);
 
-    // Debounced availability check (public, no auth needed)
+    // Fetch room (public endpoint includes ratings + availability)
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const res = await roomService.publicShow(id);
+                setRoom(res.data.data);
+            } catch {
+                navigate('/client/rooms');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetch();
+    }, [id, navigate]);
+
+    // Debounced availability check
     useEffect(() => {
         if (!form.reservation_date || !form.end_date) { setAvailMsg(null); return; }
         if (form.end_date < form.reservation_date) { setAvailMsg(null); return; }
@@ -41,7 +75,7 @@ const RoomDetail = () => {
 
         const timer = setTimeout(async () => {
             try {
-                const res = await roomService.publicCheckAvailability({
+                const res = await reservationService.checkAvailability({
                     room_id: id,
                     reservation_date: form.reservation_date,
                     end_date: form.end_date,
@@ -51,8 +85,10 @@ const RoomDetail = () => {
                 if (data.available) {
                     setAvailMsg({ type: 'success', text: data.message, price: data.price, days: data.days });
                 } else {
-                    const dateInfo = data.from ? ` (du ${new Date(data.from).toLocaleDateString('fr-FR')} au ${new Date(data.until).toLocaleDateString('fr-FR')})` : '';
-                    setAvailMsg({ type: 'error', text: data.message + dateInfo });
+                    setAvailMsg({
+                        type: 'error',
+                        text: data.message + (data.from ? ` (du ${formatDate(data.from)} au ${formatDate(data.until)})` : ''),
+                    });
                 }
             } catch {
                 if (!cancelled) setAvailMsg(null);
@@ -62,20 +98,19 @@ const RoomDetail = () => {
         return () => { cancelled = true; clearTimeout(timer); };
     }, [id, form.reservation_date, form.end_date]);
 
-    useEffect(() => {
-        const fetchRoom = async () => {
-            try {
-                const response = await roomService.publicShow(id);
-                setRoom(response.data.data);
-            } catch (err) {
-                console.error(err);
-                navigate('/rooms');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchRoom();
-    }, [id, navigate]);
+    const handleBooking = async (e) => {
+        e.preventDefault();
+        if (availMsg?.type === 'error') return;
+        setSubmitting(true);
+        try {
+            const res = await reservationService.store({ ...form, room_id: id });
+            setSuccessData(res.data.data);
+        } catch (error) {
+            setAvailMsg({ type: 'error', text: error.response?.data?.message || 'Erreur lors de la réservation.' });
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -85,88 +120,35 @@ const RoomDetail = () => {
             </div>
         );
     }
-
     if (!room) return null;
 
-    // ── Images ──
-    const images = room.images && room.images.length > 0
+    const images = room.images?.length > 0
         ? room.images.map(img => getImageUrl(img.image_path))
         : ['https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80'];
 
     const floorLabel = Number(room.floor) === 0 ? 'Rez-de-chaussée' : `Étage ${room.floor}`;
-
-    // ── WhatsApp message ──
-    const buildWhatsAppMessage = () => {
-        const msg = [
-            `Bonjour Motel Bethuli 👋`,
-            ``,
-            `Je suis intéressé(e) par la chambre suivante :`,
-            `📌 *${room.name}*`,
-            `🏨 ${floorLabel}`,
-            `👥 Capacité : ${room.capacity} personne${room.capacity > 1 ? 's' : ''}`,
-            `💰 Prix : ${Number(room.price_per_day).toLocaleString('fr-FR')} FCFA / nuit`,
-            ``,
-            `Pourriez-vous me donner plus d'informations sur les disponibilités ?`,
-            `Merci !`
-        ].join('\n');
-        return encodeURIComponent(msg);
-    };
-
-    const WHATSAPP_NUMBER = '237600000000'; // Define a fallback or use an env variable
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${buildWhatsAppMessage()}`;
-
-    const handleBook = (e) => {
-        e.preventDefault();
-        if (!user) {
-            setShowLoginPrompt(true);
-        } else {
-            // Already logged in, redirect to the client's room show page where they can actually book
-            navigate(`/client/rooms/${room.id}`);
-        }
-    };
+    const isMaintenance = room.status?.value === 'maintenance' || room.status === 'maintenance';
+    const ratings = room.ratings || [];
+    const avgRating = room.avg_rating;
 
     return (
-        <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-            {/* Login Prompt Modal */}
-            {showLoginPrompt && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95">
-                        <Users className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                        <h3 className="text-xl font-black text-slate-900 mb-2">Connexion requise</h3>
-                        <p className="text-sm text-slate-500 mb-6">
-                            Vous devez être connecté à un compte client pour pouvoir réserver une chambre.
-                        </p>
-                        <div className="space-y-3">
-                            <button onClick={() => navigate('/login')} className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors">
-                                Se connecter
-                            </button>
-                            <button onClick={() => navigate('/register')} className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors">
-                                Créer un compte
-                            </button>
-                            <button onClick={() => setShowLoginPrompt(false)} className="w-full py-3 text-slate-400 hover:text-slate-600 font-medium text-sm transition-colors mt-2">
-                                Annuler
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+        <div className="space-y-6 animate-in fade-in pb-12">
 
             {/* Back button */}
             <button
                 onClick={() => navigate(-1)}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-amber-600 transition-colors mb-6 group"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-amber-600 transition-colors group"
             >
                 <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                 Retour aux chambres
             </button>
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-                {/* ── Left : Gallery + Description ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                {/* ── Left : Gallery + Description + Reviews ── */}
                 <div className="lg:col-span-3 space-y-6">
 
                     {/* Gallery */}
                     <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100">
-                        {/* Main image */}
                         <div className="relative aspect-video overflow-hidden">
                             <img
                                 src={images[activeImage]}
@@ -192,7 +174,6 @@ const RoomDetail = () => {
                                     >
                                         <ChevronRight className="w-5 h-5" />
                                     </button>
-                                    {/* Dots */}
                                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                                         {images.map((_, i) => (
                                             <button
@@ -205,7 +186,6 @@ const RoomDetail = () => {
                                 </>
                             )}
                         </div>
-
                         {/* Thumbnails */}
                         {images.length > 1 && (
                             <div className="flex gap-2 p-3 overflow-x-auto">
@@ -252,12 +232,88 @@ const RoomDetail = () => {
                             ))}
                         </ul>
                     </div>
+
+                    {/* Reviews / Avis */}
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <MessageSquare className="w-5 h-5 text-amber-500" />
+                                Avis clients
+                            </h2>
+                            {avgRating && (
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-xl border border-amber-100">
+                                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                    <span className="font-black text-slate-800 text-sm">{avgRating}</span>
+                                    <span className="text-xs text-slate-400">/ 5</span>
+                                    <span className="text-xs text-slate-400">({room.ratings_count} avis)</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {ratings.length === 0 ? (
+                            <div className="text-center py-10 text-slate-400">
+                                <Star className="w-10 h-10 mx-auto mb-2 text-slate-200" />
+                                <p className="text-sm font-medium">Aucun avis pour le moment.</p>
+                                <p className="text-xs mt-1">Soyez le premier à partager votre expérience !</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {ratings.map((r) => (
+                                    <div key={r.id} className="border border-slate-100 rounded-xl p-4">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                                                    <span className="text-xs font-black text-amber-600">
+                                                        {r.client ? r.client.prenom[0].toUpperCase() : '?'}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-slate-800">
+                                                        {r.client ? `${r.client.prenom} ${r.client.nom}` : 'Anonyme'}
+                                                    </p>
+                                                    <p className="text-xs text-slate-400">
+                                                        {r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <StarRow value={r.rating} />
+                                        </div>
+                                        {r.comment && (
+                                            <p className="mt-3 text-sm text-slate-600 leading-relaxed">{r.comment}</p>
+                                        )}
+                                        {/* Sub-ratings */}
+                                        {(r.cleanliness_rating || r.service_rating || r.comfort_rating) && (
+                                            <div className="mt-3 pt-3 border-t border-slate-50 grid grid-cols-3 gap-3">
+                                                {r.cleanliness_rating && (
+                                                    <div className="text-center">
+                                                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">Propreté</p>
+                                                        <p className="text-sm font-black text-amber-500">{r.cleanliness_rating}/5</p>
+                                                    </div>
+                                                )}
+                                                {r.service_rating && (
+                                                    <div className="text-center">
+                                                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">Service</p>
+                                                        <p className="text-sm font-black text-amber-500">{r.service_rating}/5</p>
+                                                    </div>
+                                                )}
+                                                {r.comfort_rating && (
+                                                    <div className="text-center">
+                                                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">Confort</p>
+                                                        <p className="text-sm font-black text-amber-500">{r.comfort_rating}/5</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* ── Right : Info card ── */}
+                {/* ── Right : Sticky info + Booking ── */}
                 <div className="lg:col-span-2 space-y-5">
-                    {/* Sticky card */}
-                    <div className="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden sticky top-6">
+                    <div className="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden sticky top-24">
                         {/* Header */}
                         <div className="bg-gradient-to-br from-amber-500 to-amber-600 p-6 text-white">
                             <h1 className="text-2xl font-black mb-1 leading-tight">{room.name}</h1>
@@ -265,6 +321,13 @@ const RoomDetail = () => {
                                 <MapPin className="w-4 h-4" />
                                 {floorLabel} — Motel Bethuli
                             </div>
+                            {avgRating && (
+                                <div className="flex items-center gap-1.5 mt-2">
+                                    <Star className="w-3.5 h-3.5 text-amber-200 fill-amber-200" />
+                                    <span className="text-sm font-black text-white">{avgRating}</span>
+                                    <span className="text-xs text-amber-200">({room.ratings_count} avis)</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Price */}
@@ -275,42 +338,36 @@ const RoomDetail = () => {
                                 </span>
                                 <span className="text-slate-400 text-sm font-medium">FCFA / nuit</span>
                             </div>
-                            {room.price_per_hour && (
-                                <p className="text-xs text-slate-400 mt-1">
-                                    Ou {Number(room.price_per_hour).toLocaleString('fr-FR')} FCFA / heure
+                            {availMsg?.type === 'success' && availMsg.days && (
+                                <p className="text-xs font-bold text-emerald-600 mt-1">
+                                    {availMsg.days} nuit{availMsg.days > 1 ? 's' : ''} → {Number(availMsg.price).toLocaleString('fr-FR')} FCFA
                                 </p>
                             )}
                         </div>
 
                         {/* Details */}
-                        <div className="px-6 py-5 space-y-3 border-b border-slate-100">
+                        <div className="px-6 py-4 space-y-3 border-b border-slate-100">
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-500 flex items-center gap-2">
-                                    <BedDouble className="w-4 h-4 text-amber-400" />
-                                    Type
+                                    <Users className="w-4 h-4 text-amber-400" /> Capacité
                                 </span>
-                                <span className="font-semibold text-slate-800">Chambre standard</span>
+                                <span className="font-semibold text-slate-800">{room.capacity} personne{room.capacity > 1 ? 's' : ''}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-500 flex items-center gap-2">
-                                    <Users className="w-4 h-4 text-amber-400" />
-                                    Capacité
-                                </span>
-                                <span className="font-semibold text-slate-800">
-                                    {room.capacity} personne{room.capacity > 1 ? 's' : ''}
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-slate-500 flex items-center gap-2">
-                                    <MapPin className="w-4 h-4 text-amber-400" />
-                                    Étage
+                                    <MapPin className="w-4 h-4 text-amber-400" /> Étage
                                 </span>
                                 <span className="font-semibold text-slate-800">{floorLabel}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-500 flex items-center gap-2">
-                                    <CalendarDays className="w-4 h-4 text-amber-400" />
-                                    Disponibilité
+                                    <Clock className="w-4 h-4 text-amber-400" /> Check-in/out
+                                </span>
+                                <span className="font-semibold text-slate-800">12h00</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-slate-500 flex items-center gap-2">
+                                    <CalendarDays className="w-4 h-4 text-amber-400" /> Disponibilité
                                 </span>
                                 <span className={`font-semibold ${room.status === 'available' ? 'text-emerald-600' : 'text-rose-500'}`}>
                                     {RoomModel.getStatusLabel(room.status)}
@@ -318,10 +375,10 @@ const RoomDetail = () => {
                             </div>
                         </div>
 
-                        {/* CTA */}
+                        {/* Booking form */}
                         <div className="px-6 py-5 space-y-3">
-                            {room.status === 'available' ? (
-                                <form onSubmit={handleBook} className="space-y-3">
+                            {!isMaintenance ? (
+                                <form onSubmit={handleBooking} className="space-y-3">
                                     <div className="grid grid-cols-2 gap-2">
                                         <div>
                                             <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Arrivée</label>
@@ -378,21 +435,22 @@ const RoomDetail = () => {
 
                                     <button
                                         type="submit"
-                                        disabled={availMsg?.type === 'error' || availMsg?.type === 'checking'}
+                                        disabled={submitting || availMsg?.type === 'error' || availMsg?.type === 'checking'}
                                         className="flex items-center justify-center gap-2 w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-black text-sm shadow-lg shadow-amber-500/20 hover:-translate-y-0.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0"
                                     >
-                                        <BedDouble className="w-5 h-5" /> Vérifier &amp; Réserver
+                                        {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <BedDouble className="w-4 h-4" />}
+                                        {submitting ? 'En cours...' : 'Vérifier & Réserver'}
                                     </button>
                                 </form>
                             ) : (
                                 <div className="flex items-center gap-2 p-4 bg-rose-50 text-rose-600 rounded-xl text-sm font-medium border border-rose-100">
                                     <AlertTriangle className="w-4 h-4 shrink-0" />
-                                    Cette chambre n'est pas disponible actuellement.
+                                    Cette chambre est actuellement en maintenance.
                                 </div>
                             )}
 
                             <Link
-                                to="/rooms"
+                                to="/client/rooms"
                                 className="flex items-center justify-center gap-2 w-full py-3 border-2 border-slate-200 hover:border-amber-400 text-slate-600 hover:text-amber-600 rounded-xl font-semibold text-sm transition-all"
                             >
                                 Voir d'autres chambres
@@ -401,8 +459,57 @@ const RoomDetail = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Success Modal */}
+            {successData && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl p-8 text-center shadow-2xl border border-slate-100 max-w-sm w-full animate-in zoom-in-95">
+                        <div className="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-5">
+                            <CheckCircle className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-xl font-black text-slate-900 mb-2">Réservation envoyée !</h3>
+                        <p className="text-sm text-slate-500 mb-6">
+                            Votre demande est <strong className="text-amber-500">en attente de confirmation</strong>. Pour accélérer le processus, vous pouvez contacter notre support sur WhatsApp.
+                        </p>
+                        <div className="space-y-3">
+                            <button 
+                                onClick={() => {
+                                    const text = encodeURIComponent(
+`Bonjour l'équipe du Motel Bethuli,
+
+Je vous contacte afin d'accélérer le processus de ma demande de réservation.
+Voici les détails de ma demande :
+
+*Objet :* Confirmation de réservation
+*Hôtel :* Motel Bethuli
+*Client :* ${user?.prenom} ${user?.nom}
+*Chambre :* ${successData.room?.name || room.name} (Étage : ${room.floor === 0 ? 'RDC' : room.floor})
+*Date d'arrivée :* ${new Date(successData.reservation_date).toLocaleDateString('fr-FR')}
+*Date de départ :* ${new Date(successData.end_date).toLocaleDateString('fr-FR')}
+
+Merci d'avance pour votre prise en charge rapide !`);
+                                    window.open(`https://wa.me/237600000000?text=${text}`, '_blank');
+                                }}
+                                className="w-full px-6 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-bold text-base shadow-md transition-colors flex items-center justify-center gap-2"
+                            >
+                                <MessageCircle className="w-5 h-5" /> Contacter sur WhatsApp
+                            </button>
+                            <button
+                                onClick={() => navigate('/client/reservations')}
+                                className="w-full py-3 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors"
+                            >
+                                Voir mes réservations
+                            </button>
+                            <button
+                                onClick={() => { setSuccessData(null); setAvailMsg(null); }}
+                                className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-600 font-medium text-sm hover:bg-slate-200 transition-colors"
+                            >
+                                Fermer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
-};
-
-export default RoomDetail;
+}

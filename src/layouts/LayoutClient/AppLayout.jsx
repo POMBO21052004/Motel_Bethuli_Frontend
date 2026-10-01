@@ -8,7 +8,7 @@ export default function LayoutClient() {
     const [showNotifications, setShowNotifications] = useState(false);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 flex flex-col">
+        <div className="min-h-screen bg-slate-50 transition-colors duration-300 flex flex-col">
             <Header
                 onToggleNotifications={() => setShowNotifications(v => !v)}
                 showNotifications={showNotifications}
@@ -25,7 +25,7 @@ export default function LayoutClient() {
             <BottomNav />
 
             {/* Notification panel */}
-            <div className={`fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 transition-transform duration-300 ease-in-out z-50 ${showNotifications ? 'translate-x-0' : 'translate-x-full'}`}
+            <div className={`fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-white border-l border-slate-100 transition-transform duration-300 ease-in-out z-50 ${showNotifications ? 'translate-x-0' : 'translate-x-full'}`}
                 style={{ boxShadow: showNotifications ? '-8px 0 30px -8px rgba(0,0,0,0.12)' : 'none' }}
             >
                 <RightSidebar onClose={() => setShowNotifications(false)} />

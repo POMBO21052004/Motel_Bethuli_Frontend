@@ -265,6 +265,21 @@ export default function RoomShow() {
                         </div>
                     </div>
 
+                    {/* Équipements inclus */}
+                    {room.features && room.features.length > 0 && (
+                        <div className="bg-white rounded-2xl border shadow-sm p-6" style={{ borderColor: `${T.outlineVariant}50` }}>
+                            <h2 className="text-lg font-bold mb-4" style={{ color: T.onSurface }}>Équipements inclus</h2>
+                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                {room.features.map(item => (
+                                    <li key={item} className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: `${T.primary}15`, color: T.onSurface }}>
+                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: T.primary }} />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
                     {/* Historique des Réservations */}
                     <div className="bg-white rounded-2xl border shadow-sm p-6" style={{ borderColor: `${T.outlineVariant}50` }}>
                         <div className="flex items-center justify-between mb-4 pb-4 border-b" style={{ borderColor: `${T.outlineVariant}50` }}>

@@ -20,8 +20,6 @@ const getStatusBadge = (status) => {
             return 'bg-emerald-50 text-emerald-600 border border-emerald-100';
         case ReservationStatus.CANCELLED:
             return 'bg-red-50 text-red-600 border border-red-100';
-        case ReservationStatus.COMPLETED:
-            return 'bg-indigo-50 text-indigo-600 border border-indigo-100';
         case ReservationStatus.PENDING:
         default:
             return 'bg-amber-50 text-amber-600 border border-amber-100';
@@ -247,7 +245,7 @@ export default function ReservationIndex() {
                         </p>
                         <p className="text-2xl font-black text-slate-900">
                             {item === 'all'
-                                ? (data.stats?.pending || 0) + (data.stats?.confirmed || 0) + (data.stats?.cancelled || 0) + (data.stats?.completed || 0)
+                                ? (data.stats?.pending || 0) + (data.stats?.confirmed || 0) + (data.stats?.cancelled || 0)
                                 : (data.stats?.[item] || 0)}
                         </p>
                     </button>

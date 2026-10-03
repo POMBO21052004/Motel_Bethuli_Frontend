@@ -91,7 +91,7 @@ const RoomDetail = () => {
     // ── Images ──
     const images = room.images && room.images.length > 0
         ? room.images.map(img => getImageUrl(img.image_path))
-        : ['https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80'];
+        : [];
 
     const floorLabel = Number(room.floor) === 0 ? 'Rez-de-chaussée' : `Étage ${room.floor}`;
 
@@ -167,12 +167,18 @@ const RoomDetail = () => {
                     {/* Gallery */}
                     <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100">
                         {/* Main image */}
-                        <div className="relative aspect-video overflow-hidden">
-                            <img
-                                src={images[activeImage]}
-                                alt={room.name}
-                                className="w-full h-full object-cover transition-all duration-500"
-                            />
+                        <div className="relative aspect-video overflow-hidden bg-slate-100">
+                            {images.length > 0 ? (
+                                <img
+                                    src={images[activeImage]}
+                                    alt={room.name}
+                                    className="w-full h-full object-cover transition-all duration-500"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <BedDouble className="w-16 h-16 text-slate-300" />
+                                </div>
+                            )}
                             {/* Status badge */}
                             <div className={`absolute top-4 right-4 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm ${RoomModel.getStatusColor(room.status)}`}>
                                 {RoomModel.getStatusLabel(room.status)}
@@ -236,21 +242,18 @@ const RoomDetail = () => {
                     {/* Inclus */}
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                         <h2 className="text-lg font-bold text-slate-800 mb-4">Ce qui est inclus</h2>
-                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-600">
-                            {[
-                                'Wi-Fi gratuit',
-                                'Climatisation',
-                                'Eau chaude',
-                                'Linge de lit propre',
-                                'Sécurité 24h/24',
-                                'Parking sécurisé',
-                            ].map(item => (
-                                <li key={item} className="flex items-center gap-2">
-                                    <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                                    {item}
-                                </li>
-                            ))}
-                        </ul>
+                        {room.features && room.features.length > 0 ? (
+                            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-600">
+                                {room.features.map(item => (
+                                    <li key={item} className="flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-slate-500 italic">Aucun équipement spécifique renseigné pour cette chambre.</p>
+                        )}
                     </div>
                 </div>
 

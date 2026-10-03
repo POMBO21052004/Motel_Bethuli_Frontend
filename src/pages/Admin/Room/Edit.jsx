@@ -12,6 +12,16 @@ const STEPS = [
     { id: 'images', title: 'Photos', subtitle: 'Galerie d\'images' },
     { id: 'recap', title: 'Récapitulatif', subtitle: 'Vérification' }
 ];
+const PREDEFINED_FEATURES = [
+    "Wi-Fi gratuit",
+    "Climatisation",
+    "Eau chaude",
+    "Linge de lit propre",
+    "Sécurité 24h/24",
+    "Parking sécurisé",
+    "Télévision",
+    "Mini-réfrigérateur"
+];
 
 export default function RoomEdit() {
     const { id } = useParams();
@@ -19,6 +29,7 @@ export default function RoomEdit() {
     const { updateRoom, loading: isSaving } = useRooms();
     const [currentStep, setCurrentStep] = useState(0);
     const [loadingData, setLoadingData] = useState(true);
+    const [newFeature, setNewFeature] = useState("");
     
     // Form State
     const [formData, setFormData] = useState({
@@ -30,6 +41,7 @@ export default function RoomEdit() {
         status: RoomStatus.AVAILABLE,
         description_fr: '',
         description_en: '',
+        features: [],
     });
     
     const [existingImages, setExistingImages] = useState([]);
@@ -55,6 +67,7 @@ export default function RoomEdit() {
                     status: room.status,
                     description_fr: room.description_fr,
                     description_en: room.description_en || '',
+                    features: room.features || [],
                 });
                 setExistingImages(room.images || []);
                 const primary = (room.images || []).find(img => img.is_primary);
@@ -74,6 +87,29 @@ export default function RoomEdit() {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAddFeature = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (newFeature.trim() && !formData.features.includes(newFeature.trim())) {
+                setFormData(prev => ({ ...prev, features: [...prev.features, newFeature.trim()] }));
+                setNewFeature('');
+            }
+        }
+    };
+
+    const removeFeature = (f) => {
+        setFormData(prev => ({ ...prev, features: prev.features.filter(x => x !== f) }));
+    };
+
+    const toggleFeature = (f) => {
+        setFormData(prev => ({
+            ...prev,
+            features: prev.features.includes(f) 
+                ? prev.features.filter(x => x !== f) 
+                : [...prev.features, f]
+        }));
     };
 
     const handleAddImageUrl = () => {
@@ -132,7 +168,9 @@ export default function RoomEdit() {
     const handleSubmit = async () => {
         const data = new FormData();
         Object.keys(formData).forEach(key => {
-            if (formData[key] !== null && formData[key] !== '') {
+            if (Array.isArray(formData[key])) {
+                formData[key].forEach(val => data.append(`${key}[]`, val));
+            } else if (formData[key] !== null && formData[key] !== '') {
                 data.append(key, formData[key]);
             }
         });
@@ -279,6 +317,45 @@ const T = {
                                         rows="4"
                                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all resize-y"
                                     />
+                                </div>
+                                <div className="space-y-2 md:col-span-2 mt-4 border-t pt-4">
+                                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">Équipements inclus</label>
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        {PREDEFINED_FEATURES.map(f => (
+                                            <button key={f} type="button" onClick={() => toggleFeature(f)}
+                                                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${formData.features?.includes(f) ? 'bg-amber-100 text-amber-700 border-2 border-amber-500/30' : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'}`}>
+                                                {f} {formData.features?.includes(f) ? '✓' : '+'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <input 
+                                            value={newFeature} 
+                                            onChange={e => setNewFeature(e.target.value)} 
+                                            onKeyDown={handleAddFeature} 
+                                            placeholder="Ajouter un équipement (ex: Netflix) et appuyez sur Entrée..." 
+                                            className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => handleAddFeature({key: 'Enter', preventDefault: ()=>{}})}
+                                            className="px-5 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-sm hover:bg-slate-700 transition-colors"
+                                        >
+                                            Ajouter
+                                        </button>
+                                    </div>
+                                    {formData.features?.filter(f => !PREDEFINED_FEATURES.includes(f)).length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                            {formData.features.filter(f => !PREDEFINED_FEATURES.includes(f)).map(f => (
+                                                <span key={f} className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 border border-amber-200">
+                                                    {f} 
+                                                    <button type="button" onClick={() => removeFeature(f)} className="hover:text-amber-900 focus:outline-none w-4 h-4 flex items-center justify-center rounded-full hover:bg-amber-200 transition-colors">
+                                                        &times;
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

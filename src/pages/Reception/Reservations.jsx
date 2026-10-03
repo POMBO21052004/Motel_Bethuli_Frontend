@@ -6,7 +6,7 @@ import { useReceptionRooms } from '../../hooks/useReceptionRooms';
 import { ReservationModel, ReservationStatus } from '../../models/ReservationModel';
 import { getImageUrl } from '../../utils/getImageUrl';
 
-const statuses = ['all', ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CANCELLED, ReservationStatus.COMPLETED];
+const statuses = ['all', ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CANCELLED];
 const today = new Date().toISOString().slice(0, 10);
 const emptyForm = { client_id: '', room_id: '', reservation_date: today, end_date: today, start_time: '12:00', end_time: '12:00', total_price: '', notes: '' };
 

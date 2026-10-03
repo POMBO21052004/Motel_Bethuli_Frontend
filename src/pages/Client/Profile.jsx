@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
     User, Mail, Phone, Calendar, Shield, ShieldCheck, ShieldX,
     Lock, CreditCard, MapPin, Globe, Edit2, AlertTriangle, CheckCircle2,
@@ -160,7 +161,7 @@ export default function ClientProfile() {
                                 {profile?.phone && (
                                     <div className="flex items-center gap-2 justify-center text-slate-600">
                                         <Phone className="w-4 h-4 shrink-0 text-amber-500" />
-                                        <span className="text-sm">{profile.phone}</span>
+                                        <span className="text-sm">{`${profile.code_phone || ''} ${profile.phone}`.trim()}</span>
                                     </div>
                                 )}
                                 <div className="flex items-center gap-2 justify-center text-slate-400">
@@ -176,12 +177,24 @@ export default function ClientProfile() {
 
                         {/* Informations Personnelles */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-slate-800 mb-1">Informations Personnelles</h3>
-                            <p className="text-sm text-slate-500 mb-5">Vos données de compte</p>
+                            <div className="flex items-start justify-between mb-5">
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-800 mb-1">Informations Personnelles</h3>
+                                    <p className="text-sm text-slate-500">Vos données de compte</p>
+                                </div>
+                                <Link 
+                                    to="/client/profile/edit"
+                                    className="px-4 py-2 border-2 border-slate-200 text-slate-600 hover:border-amber-400 hover:text-amber-600 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5"
+                                >
+                                    <Edit2 className="w-3.5 h-3.5" /> Modifier
+                                </Link>
+                            </div>
                             <InfoRow icon={User}     label="Prénom"         value={profile?.prenom} />
                             <InfoRow icon={User}     label="Nom"            value={profile?.nom} />
+                            <InfoRow icon={User}     label="Sexe"           value={profile?.sexe} />
+                            <InfoRow icon={Calendar} label="Date de naissance" value={profile?.date_naissance ? new Date(profile?.date_naissance).toLocaleDateString('fr-FR') : null} />
                             <InfoRow icon={Mail}     label="Adresse Email"  value={profile?.email} />
-                            <InfoRow icon={Phone}    label="Téléphone"      value={profile?.phone || 'Non renseigné'} />
+                            <InfoRow icon={Phone}    label="Téléphone"      value={profile?.phone ? `${profile?.code_phone || ''} ${profile?.phone}`.trim() : 'Non renseigné'} />
                             <InfoRow icon={Calendar} label="Membre depuis"  value={memberSince} />
                         </div>
 

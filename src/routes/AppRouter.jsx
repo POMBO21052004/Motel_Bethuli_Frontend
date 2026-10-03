@@ -57,6 +57,7 @@ import ReceptionRooms from '../pages/Reception/Rooms';
 import ReceptionClients from '../pages/Reception/Clients';
 import ClientReservations from '../pages/Client/Reservations';
 import ClientProfile from '../pages/Client/Profile';
+import ClientProfileEdit from '../pages/Client/ProfileEdit';
 import ClientRatings from '../pages/Client/Ratings';
 import ClientRooms from '../pages/Client/Rooms';
 import ClientRoomShow from '../pages/Client/RoomShow';
@@ -97,6 +98,7 @@ const AppRouter = () => {
                     <Route path="/client/reservations/create" element={<ClientReservationCreate />} />
                     <Route path="/client/reservations/:id" element={<ClientReservationShow />} />
                     <Route path="/client/profile"      element={<ClientProfile />} />
+                    <Route path="/client/profile/edit" element={<ClientProfileEdit />} />
                     <Route path="/client/ratings"      element={<ClientRatings />} />
                 </Route>
             </Route>

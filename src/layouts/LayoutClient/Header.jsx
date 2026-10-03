@@ -36,8 +36,8 @@ export default function Header({ onToggleNotifications, showNotifications }) {
 
                 {/* Logo */}
                 <Link to="/client/dashboard" className="flex-shrink-0 flex items-center gap-2">
-                    <img src={logo} alt="Motel Bethuli" className="h-8 w-auto object-contain" />
-                    <span className="font-serif font-bold text-xl text-slate-800 tracking-tight hidden sm:block">
+                    <img src={logo} alt="Motel Bethuli" className="h-12 w-auto object-contain" />
+                    <span className="font-serif font-bold text-2xl text-slate-800 tracking-tight hidden sm:block">
                         Motel <span className="text-amber-500">Bethuli</span>
                     </span>
                 </Link>

@@ -12,7 +12,6 @@ const TABS = [
     { key: 'all',       label: 'Toutes' },
     { key: 'pending',   label: 'En attente' },
     { key: 'confirmed', label: 'Confirmées' },
-    { key: 'completed', label: 'Terminées' },
     { key: 'cancelled', label: 'Annulées' },
 ];
 
@@ -24,7 +23,6 @@ function StatusBadge({ status }) {
         pending:   'bg-amber-100 text-amber-700 border-amber-200',
         confirmed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
         cancelled: 'bg-rose-100 text-rose-700 border-rose-200',
-        completed: 'bg-indigo-100 text-indigo-700 border-indigo-200',
     };
     return (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${colors[status] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
@@ -38,8 +36,7 @@ export default function ClientReservations() {
     const [activeTab, setActiveTab] = useState('all');
     const { reservations, loading, error, fetchReservations } = useClientReservations(activeTab);
 
-    const canRate = (item) =>
-        (item.status === ReservationStatus.CONFIRMED || item.status === ReservationStatus.COMPLETED);
+    const canRate = (item) => item.status === ReservationStatus.CONFIRMED;
 
     return (
         <div className="space-y-8 pb-12 animate-in fade-in">

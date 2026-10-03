@@ -21,7 +21,6 @@ function StatusBadge({ status }) {
         pending:   'bg-amber-100 text-amber-700 border-amber-200',
         confirmed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
         cancelled: 'bg-rose-100 text-rose-700 border-rose-200',
-        completed: 'bg-indigo-100 text-indigo-700 border-indigo-200',
     };
     return (
         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${map[status] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
@@ -75,14 +74,15 @@ function SubStarInput({ label, value, onChange }) {
 // ── Rating Modal ────────────────────────────────────────────────────────────
 function RatingModal({ reservation, existingRating, onClose, onSuccess }) {
     const [form, setForm] = useState({
-        rating: existingRating?.rating || 5,
         comment: existingRating?.comment || '',
-        cleanliness_rating: existingRating?.cleanliness_rating || 0,
-        service_rating: existingRating?.service_rating || 0,
-        comfort_rating: existingRating?.comfort_rating || 0,
+        cleanliness_rating: existingRating?.cleanliness_rating || 5,
+        service_rating: existingRating?.service_rating || 5,
+        comfort_rating: existingRating?.comfort_rating || 5,
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const computedRating = Math.round((form.cleanliness_rating + form.service_rating + form.comfort_rating) / 3);
 
     const submit = async (e) => {
         e.preventDefault();
@@ -90,11 +90,10 @@ function RatingModal({ reservation, existingRating, onClose, onSuccess }) {
         try {
             await ratingService.upsert({
                 reservation_id: reservation.id,
-                rating: form.rating,
                 comment: form.comment,
-                cleanliness_rating: form.cleanliness_rating || null,
-                service_rating: form.service_rating || null,
-                comfort_rating: form.comfort_rating || null,
+                cleanliness_rating: form.cleanliness_rating,
+                service_rating: form.service_rating,
+                comfort_rating: form.comfort_rating,
             });
             onSuccess();
         } catch (err) {
@@ -121,21 +120,20 @@ function RatingModal({ reservation, existingRating, onClose, onSuccess }) {
                 </div>
 
                 <form onSubmit={submit} className="p-6 space-y-5">
-                    {/* Global rating */}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Note globale</label>
-                        <StarInput value={form.rating} onChange={(v) => setForm(f => ({ ...f, rating: v }))} />
-                        <p className="text-xs text-slate-400 mt-1">
-                            {['', 'Mauvais', 'Passable', 'Bien', 'Très bien', 'Excellent'][form.rating]}
-                        </p>
-                    </div>
-
                     {/* Sub ratings */}
-                    <div className="space-y-3 bg-slate-50 rounded-xl p-4">
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Critères détaillés (optionnel)</p>
-                        <SubStarInput label="Propreté"  value={form.cleanliness_rating} onChange={(v) => setForm(f => ({ ...f, cleanliness_rating: v }))} />
-                        <SubStarInput label="Service"   value={form.service_rating}     onChange={(v) => setForm(f => ({ ...f, service_rating: v }))} />
-                        <SubStarInput label="Confort"   value={form.comfort_rating}     onChange={(v) => setForm(f => ({ ...f, comfort_rating: v }))} />
+                    <div className="space-y-4 bg-slate-50 rounded-xl p-5 border border-slate-100">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Critères d'évaluation <span className="text-red-500">*</span></p>
+                        <SubStarInput label="Propreté de la chambre" value={form.cleanliness_rating} onChange={(v) => setForm(f => ({ ...f, cleanliness_rating: v }))} />
+                        <SubStarInput label="Qualité du service" value={form.service_rating} onChange={(v) => setForm(f => ({ ...f, service_rating: v }))} />
+                        <SubStarInput label="Confort" value={form.comfort_rating} onChange={(v) => setForm(f => ({ ...f, comfort_rating: v }))} />
+                        
+                        <div className="mt-4 pt-4 border-t border-slate-200 flex items-center justify-between">
+                            <span className="text-sm font-bold text-slate-700">Note globale calculée :</span>
+                            <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100">
+                                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                <span className="font-black text-amber-700 text-sm">{computedRating} / 5</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Comment */}
@@ -220,7 +218,7 @@ export default function ClientReservationShow() {
     const nights = reservation.reservation_date && reservation.end_date
         ? Math.max(1, Math.round((new Date(reservation.end_date) - new Date(reservation.reservation_date)) / 86400000))
         : 1;
-    const canRate = reservation.status === ReservationStatus.CONFIRMED || reservation.status === ReservationStatus.COMPLETED;
+    const canRate = reservation.status === ReservationStatus.CONFIRMED;
     const existingRating = reservation.rating;
 
     return (

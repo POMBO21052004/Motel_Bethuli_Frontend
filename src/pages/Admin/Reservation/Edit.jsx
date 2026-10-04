@@ -276,6 +276,7 @@ export default function ReservationEdit() {
                                         name="reservation_date"
                                         value={formData.reservation_date}
                                         onChange={handleInputChange}
+                                        min={new Date().toISOString().split('T')[0]}
                                         required
                                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
                                     />

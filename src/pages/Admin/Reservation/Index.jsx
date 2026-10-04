@@ -114,10 +114,23 @@ function RoomGroup({ group, navigate, updateStatus, statuses }) {
                                 const createdAt = res.created_at ? new Date(res.created_at) : new Date(res.reservation_date);
                                 const isExpiredPending = res.status === 'pending' && (new Date() - createdAt > 2 * 24 * 60 * 60 * 1000);
 
+                                const now = new Date();
+                                const start = new Date(res.reservation_date);
+                                if (res.start_time) {
+                                    const [h, m] = res.start_time.split(':');
+                                    start.setHours(h, m, 0);
+                                } else start.setHours(12, 0, 0);
+                                const end = new Date(res.end_date || res.reservation_date);
+                                if (res.end_time) {
+                                    const [h, m] = res.end_time.split(':');
+                                    end.setHours(h, m, 0);
+                                } else end.setHours(12, 0, 0);
+                                const isOngoing = res.status === 'confirmed' && now >= start && now <= end;
+
                                 return (
                                     <tr
                                         key={res.id}
-                                        className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
+                                        className={`transition-colors group cursor-pointer ${isOngoing ? 'bg-amber-50/50 hover:bg-amber-50' : 'hover:bg-slate-50/70'}`}
                                         onClick={() => navigate(`/admin/reservations/${res.id}`)}
                                     >
                                         <td className="px-6 py-4">
@@ -130,7 +143,15 @@ function RoomGroup({ group, navigate, updateStatus, statuses }) {
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <p className="font-bold text-slate-900">{res.client?.prenom} {res.client?.nom}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-bold text-slate-900">{res.client?.prenom} {res.client?.nom}</p>
+                                                        {isOngoing && (
+                                                            <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded shadow-sm">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                                En cours
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <p className="text-xs text-slate-400">{res.client?.email}</p>
                                                 </div>
                                             </div>

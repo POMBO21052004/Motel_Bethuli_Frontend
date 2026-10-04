@@ -2,34 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Clock, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import slide1 from '../../assets/slides/slide1.png';
+import slide2 from '../../assets/slides/slide2.png';
+import slide3 from '../../assets/slides/slide3.png';
+import slide4 from '../../assets/slides/slide4.png';
+import slide5 from '../../assets/slides/slide5.png';
 
 const slides = [
   {
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+    image: slide1,
     title: 'Bienvenue au',
     titleHighlight: 'Motel Bethuli',
     subtitle: 'Votre havre de paix au cœur de la ville. Un confort inégalé vous attend.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+    image: slide2,
     title: 'Des Chambres',
     titleHighlight: 'Exceptionnelles',
     subtitle: 'Chaque chambre est conçue pour vous offrir une expérience unique de confort et de luxe.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+    image: slide3,
     title: 'Un Service',
     titleHighlight: '5 Étoiles',
     subtitle: 'Notre équipe dévouée est à votre disposition 24h/24 pour répondre à tous vos besoins.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+    image: slide4,
     title: 'Réservez Votre',
     titleHighlight: 'Moment de Paix',
     subtitle: 'Profitez de nos offres exclusives et planifiez votre séjour idéal en quelques clics.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+    image: slide5,
     title: 'Vivez Une',
     titleHighlight: 'Expérience Unique',
     subtitle: 'Blanchisserie, salon de coiffure, service en chambre — tout est pensé pour vous.',
@@ -42,9 +47,8 @@ const HeroSection = () => {
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [searchParams, setSearchParams] = useState({
-    date: '',
-    startTime: '',
-    endTime: ''
+    startDate: '',
+    endDate: ''
   });
 
   const goToSlide = (idx) => {
@@ -67,7 +71,7 @@ const HeroSection = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    navigate(`/rooms?date=${searchParams.date}&start=${searchParams.startTime}&end=${searchParams.endTime}`);
+    navigate(`/rooms?start_date=${searchParams.startDate}&end_date=${searchParams.endDate}`);
   };
 
   return (
@@ -135,37 +139,28 @@ const HeroSection = () => {
           <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors duration-300">
             <Calendar className="h-5 w-5 text-amber-500 flex-shrink-0" />
             <div className="flex flex-col w-full text-left">
-              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Date</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Arrivée</span>
               <input
                 type="date"
                 required
+                min={new Date().toISOString().split('T')[0]}
                 className="bg-transparent border-none focus:outline-none text-slate-800 dark:text-white font-semibold text-sm w-full p-0 [color-scheme:light] dark:[color-scheme:dark]"
-                value={searchParams.date}
-                onChange={(e) => setSearchParams({...searchParams, date: e.target.value})}
+                value={searchParams.startDate}
+                onChange={(e) => setSearchParams({...searchParams, startDate: e.target.value})}
               />
             </div>
           </div>
           <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors duration-300">
-            <Clock className="h-5 w-5 text-amber-500 flex-shrink-0" />
+            <Calendar className="h-5 w-5 text-amber-500 flex-shrink-0" />
             <div className="flex flex-col w-full text-left">
-              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">{t('start_time')}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Départ</span>
               <input
-                type="time"
+                type="date"
+                required
+                min={searchParams.startDate || new Date().toISOString().split('T')[0]}
                 className="bg-transparent border-none focus:outline-none text-slate-800 dark:text-white font-semibold text-sm w-full p-0 [color-scheme:light] dark:[color-scheme:dark]"
-                value={searchParams.startTime}
-                onChange={(e) => setSearchParams({...searchParams, startTime: e.target.value})}
-              />
-            </div>
-          </div>
-          <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors duration-300">
-            <Clock className="h-5 w-5 text-amber-500 flex-shrink-0" />
-            <div className="flex flex-col w-full text-left">
-              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">{t('end_time')}</span>
-              <input
-                type="time"
-                className="bg-transparent border-none focus:outline-none text-slate-800 dark:text-white font-semibold text-sm w-full p-0 [color-scheme:light] dark:[color-scheme:dark]"
-                value={searchParams.endTime}
-                onChange={(e) => setSearchParams({...searchParams, endTime: e.target.value})}
+                value={searchParams.endDate}
+                onChange={(e) => setSearchParams({...searchParams, endDate: e.target.value})}
               />
             </div>
           </div>

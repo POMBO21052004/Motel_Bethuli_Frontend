@@ -49,6 +49,8 @@ import AdminReservationEdit from '../pages/Admin/Reservation/Edit';
 
 import AdminRatingIndex from '../pages/Admin/Rating/Index';
 import Administrators from '../pages/Admin/Administrators';
+import AdminProfile from '../pages/Admin/Profile';
+import AdminProfileEdit from '../pages/Admin/ProfileEdit';
 
 import ReceptionDashboard from '../pages/Reception/Dashboard';
 import ClientDashboard from '../pages/Client/Dashboard';
@@ -134,6 +136,8 @@ const AppRouter = () => {
                     <Route path="/admin/rooms/:id/edit" element={<RoomEdit />} />
 
                     <Route path="/admin/ratings" element={<AdminRatingIndex />} />
+                    <Route path="/admin/profile" element={<AdminProfile />} />
+                    <Route path="/admin/profile/edit" element={<AdminProfileEdit />} />
 
                 </Route>
             </Route>

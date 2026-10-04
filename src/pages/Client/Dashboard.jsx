@@ -9,6 +9,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import dashboardService from '../../services/client/dashboardService';
 import { getImageUrl } from '../../utils/getImageUrl.jsx';
 import { ReservationModel, ReservationStatus } from '../../models/ReservationModel';
+import slide1 from '../../assets/slides/slide1.png';
+import slide2 from '../../assets/slides/slide2.png';
+import slide3 from '../../assets/slides/slide3.png';
+import slide4 from '../../assets/slides/slide4.png';
+import slide5 from '../../assets/slides/slide5.png';
 
 const T = {
     bg: '#f8fafc', cardBg: '#ffffff', primary: '#f59e0b',
@@ -226,7 +231,7 @@ export default function ClientDashboard() {
     const cniVerified = clientUser?.customer_profile?.cni_verified;
 
     const timeStr = currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    const dateStr = currentTime.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const dateStr = currentTime.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
     // Upcoming reservations: next_reservation + recent ones that are upcoming
     const upcomingReservations = next_reservation ? [next_reservation] : [];
@@ -237,32 +242,32 @@ export default function ClientDashboard() {
         {
             title: `Bienvenue, ${prenom} !`,
             subtitle: "Heureux de vous revoir dans votre espace personnel.",
-            image: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+            image: slide1
         },
         {
             title: "Votre confort, notre priorité",
             subtitle: "Réservez facilement et suivez l'historique de vos séjours en temps réel.",
-            image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+            image: slide2
         },
         {
             title: `${prenom}, prêt pour un nouveau séjour ?`,
             subtitle: "Découvrez nos nouvelles chambres et suites élégantes, équipées pour votre repos.",
-            image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+            image: slide3
         },
         {
             title: "Gérez vos réservations en un clic",
             subtitle: "Validation, suivi et détails de votre séjour à portée de main.",
-            image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+            image: slide4
         },
         {
             title: `Merci de votre confiance, ${prenom}`,
             subtitle: "Profitez de l'excellence de nos services depuis cet espace dédié.",
-            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+            image: slide5
         },
         {
             title: "Un service 5 étoiles au Motel Bethuli",
             subtitle: "Notre équipe dévouée est là pour vous garantir un séjour inoubliable.",
-            image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+            image: slide3
         }
     ];
 
@@ -292,7 +297,7 @@ export default function ClientDashboard() {
                             <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">
                                 Motel Bethuli • Espace Client
                             </p>
-                            <p className="text-xs text-slate-300 font-medium">{dateStr} — {timeStr}</p>
+                            <p className="text-xs text-slate-300 font-medium">Nous sommes le {dateStr} et il est {timeStr}</p>
                         </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">

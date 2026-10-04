@@ -114,9 +114,15 @@ export default function ClientProfile() {
                 </button>
                 <button
                     onClick={() => setTab('cni')}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'cni' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`relative flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'cni' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                     Identité &amp; CNI
+                    {!cniHasFiles && (
+                        <span className="absolute top-1 right-2 sm:right-4 flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                        </span>
+                    )}
                 </button>
             </div>
 

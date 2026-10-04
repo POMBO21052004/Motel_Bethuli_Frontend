@@ -8,6 +8,7 @@ import roomService from '../../services/roomService';
 import { RoomModel } from '../../models/RoomModel';
 import { getImageUrl } from '../../utils/getImageUrl';
 import RoomCard from '../../components/admin/room/RoomCard';
+import slide1 from '../../assets/slides/slide1.png';
 
 const Home = () => {
   const { t } = useTranslation();
@@ -129,7 +130,7 @@ const Home = () => {
       <div className="relative bg-slate-800 py-16">
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1920&q=80"
+            src={slide1}
             alt="Motel Bethuli ambiance"
             className="w-full h-full object-cover opacity-25"
           />
@@ -157,4 +158,5 @@ const Home = () => {
 };
 
 export default Home;
+
 

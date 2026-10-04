@@ -289,6 +289,7 @@ export default function AdminClientList() {
                                     const isSelected = selectedIds.includes(client.id);
                                     const imgUrl = client.profil ? `${API_BASE}/storage/${client.profil}` : null;
                                     const isSelf = user && user.id === client.id;
+                                    const cniPending = client.customer_profile && client.customer_profile.cni_recto_path && client.customer_profile.cni_verso_path && !client.customer_profile.cni_verified;
 
                                     return (
                                         <tr key={client.id}
@@ -311,6 +312,12 @@ export default function AdminClientList() {
                                                         )}
                                                         {client.is_online && (
                                                             <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white animate-pulse" title="En ligne"></span>
+                                                        )}
+                                                        {cniPending && (
+                                                            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5" title="CNI à vérifier">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-500 border-2 border-white"></span>
+                                                            </span>
                                                         )}
                                                     </div>
                                                     <div>

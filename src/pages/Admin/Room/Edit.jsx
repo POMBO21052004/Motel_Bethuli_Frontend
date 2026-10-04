@@ -20,7 +20,9 @@ const PREDEFINED_FEATURES = [
     "Sécurité 24h/24",
     "Parking sécurisé",
     "Télévision",
-    "Mini-réfrigérateur"
+    "Mini-réfrigérateur",
+    "Espace pour événement",
+    "Service traiteur",
 ];
 
 export default function RoomEdit() {

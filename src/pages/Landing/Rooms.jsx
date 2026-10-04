@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { BedDouble, Users, Search, Loader2, ChevronRight, ChevronLeft, SlidersHorizontal, MapPin, ArrowRight, Wrench } from 'lucide-react';
 import roomService from '../../services/roomService';
 import { getImageUrl } from '../../utils/getImageUrl';
@@ -103,6 +103,8 @@ function FloorSection({ floor, rooms }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Rooms() {
     const { t } = useTranslation();
+    const location = useLocation();
+    
     const [rooms, setRooms]               = useState([]);
     const [loading, setLoading]           = useState(true);
     const [searchTerm, setSearchTerm]     = useState('');
@@ -118,6 +120,23 @@ export default function Rooms() {
     });
 
     const [activeFilters, setActiveFilters] = useState({});
+
+    // Parse URL parameters on initial mount
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const startDate = queryParams.get('start_date') || '';
+        const endDate = queryParams.get('end_date') || '';
+        
+        if (startDate || endDate) {
+            const initialFilters = {
+                ...formFilters,
+                start_date: startDate,
+                end_date: endDate
+            };
+            setFormFilters(initialFilters);
+            setActiveFilters(initialFilters);
+        }
+    }, [location.search]);
 
     const fetchRooms = useCallback(async () => {
         setLoading(true);
@@ -212,6 +231,7 @@ export default function Rooms() {
                                     name="start_date"
                                     value={formFilters.start_date}
                                     onChange={handleChange}
+                                    min={new Date().toISOString().split('T')[0]}
                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
                                 />
                             </div>
@@ -220,7 +240,7 @@ export default function Rooms() {
                                 <input
                                     type="date"
                                     name="end_date"
-                                    min={formFilters.start_date ? getNextDay(formFilters.start_date) : undefined}
+                                    min={formFilters.start_date ? getNextDay(formFilters.start_date) : new Date().toISOString().split('T')[0]}
                                     value={formFilters.end_date}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"

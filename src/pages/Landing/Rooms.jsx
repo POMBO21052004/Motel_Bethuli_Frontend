@@ -7,6 +7,7 @@ import { getImageUrl } from '../../utils/getImageUrl';
 
 // ── Room Card ─────────────────────────────────────────────────────────────
 function RoomCard({ room }) {
+    const { t } = useTranslation();
     const imageUrl = room.primary_image?.image_path
         ? getImageUrl(room.primary_image.image_path)
         : null;
@@ -43,15 +44,15 @@ function RoomCard({ room }) {
                 <div className="absolute bottom-3 left-3">
                     {isMaintenance ? (
                         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-800/90 text-white backdrop-blur-md shadow-sm">
-                            <Wrench className="w-3 h-3" /> Maintenance
+                            <Wrench className="w-3 h-3" /> {t('room_maintenance')}
                         </span>
                     ) : room.is_occupied_now ? (
                         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-500/90 text-white backdrop-blur-md shadow-sm">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Occupée
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> {t('room_occupied')}
                         </span>
                     ) : (
                         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/90 text-white backdrop-blur-md shadow-sm">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white" /> Disponible
+                            <span className="w-1.5 h-1.5 rounded-full bg-white" /> {t('room_available')}
                         </span>
                     )}
                 </div>
@@ -72,7 +73,7 @@ function RoomCard({ room }) {
                         <Users className="w-3 h-3" /> {room.capacity} Pers.
                     </span>
                     <span className="text-xs font-black text-amber-500 flex items-center gap-1 group-hover:gap-2 transition-all">
-                        Réserver <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                        {t('book_room')} <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
                     </span>
                 </div>
             </div>
@@ -82,7 +83,9 @@ function RoomCard({ room }) {
 
 // ── Floor Section ─────────────────────────────────────────────────────────────
 function FloorSection({ floor, rooms }) {
-    const label = floor === 0 ? 'Rez-de-chaussée' : `Étage ${floor}`;
+    const { t } = useTranslation();
+    const label = floor === 0 ? t('ground_floor') : `${t('floor')} ${floor}`;
+    const roomWord = rooms.length > 1 ? t('rooms_count') : t('room');
     return (
         <div>
             <div className="flex items-center gap-3 mb-4">
@@ -90,7 +93,7 @@ function FloorSection({ floor, rooms }) {
                     <span className="text-xs font-black text-amber-600">{floor}</span>
                 </div>
                 <h2 className="text-base font-black text-slate-800">{label}</h2>
-                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">{rooms.length} chambre{rooms.length > 1 ? 's' : ''}</span>
+                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">{rooms.length} {roomWord}</span>
                 <div className="flex-1 h-px bg-slate-100"></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">

@@ -8,42 +8,17 @@ import slide3 from '../../assets/slides/slide3.png';
 import slide4 from '../../assets/slides/slide4.png';
 import slide5 from '../../assets/slides/slide5.png';
 
-const slides = [
-  {
-    image: slide1,
-    title: 'Bienvenue au',
-    titleHighlight: 'Motel Bethuli',
-    subtitle: 'Votre havre de paix au cœur de la ville. Un confort inégalé vous attend.',
-  },
-  {
-    image: slide2,
-    title: 'Des Chambres',
-    titleHighlight: 'Exceptionnelles',
-    subtitle: 'Chaque chambre est conçue pour vous offrir une expérience unique de confort et de luxe.',
-  },
-  {
-    image: slide3,
-    title: 'Un Service',
-    titleHighlight: '5 Étoiles',
-    subtitle: 'Notre équipe dévouée est à votre disposition 24h/24 pour répondre à tous vos besoins.',
-  },
-  {
-    image: slide4,
-    title: 'Réservez Votre',
-    titleHighlight: 'Moment de Paix',
-    subtitle: 'Profitez de nos offres exclusives et planifiez votre séjour idéal en quelques clics.',
-  },
-  {
-    image: slide5,
-    title: 'Vivez Une',
-    titleHighlight: 'Expérience Unique',
-    subtitle: 'Blanchisserie, salon de coiffure, service en chambre — tout est pensé pour vous.',
-  },
-];
-
 const HeroSection = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const slides = [
+    { image: slide1, title: t('slide1_title'), titleHighlight: t('slide1_highlight'), subtitle: t('slide1_subtitle') },
+    { image: slide2, title: t('slide2_title'), titleHighlight: t('slide2_highlight'), subtitle: t('slide2_subtitle') },
+    { image: slide3, title: t('slide3_title'), titleHighlight: t('slide3_highlight'), subtitle: t('slide3_subtitle') },
+    { image: slide4, title: t('slide4_title'), titleHighlight: t('slide4_highlight'), subtitle: t('slide4_subtitle') },
+    { image: slide5, title: t('slide5_title'), titleHighlight: t('slide5_highlight'), subtitle: t('slide5_subtitle') },
+  ];
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [searchParams, setSearchParams] = useState({

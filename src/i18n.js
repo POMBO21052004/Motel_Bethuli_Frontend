@@ -5,30 +5,47 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
+      // ── Nav ──
       "home": "Home",
       "rooms": "Rooms",
       "about": "About Us",
       "contact": "Contact",
       "book_now": "Book Now",
+
+      // ── Hero / Search ──
       "search": "Search Availability",
       "check_in": "Check-in Date",
       "check_out": "Check-out Date",
       "start_time": "Start Time",
       "end_time": "End Time",
-      "hero_title": "Welcome to Motel Bethuli",
-      "hero_subtitle": "Experience comfort and tranquility. Book your perfect room today.",
+      "hero_title": "Welcome to",
+      "hero_title_highlight": "Motel Bethuli",
+
+      // ── Slides ──
+      "slide1_title": "Welcome to",
+      "slide1_highlight": "Motel Bethuli",
+      "slide1_subtitle": "Your haven of peace in the heart of the city. Unmatched comfort awaits you.",
+      "slide2_title": "Exceptional",
+      "slide2_highlight": "Rooms",
+      "slide2_subtitle": "Each room is designed to offer you a unique experience of comfort and luxury.",
+      "slide3_title": "A 5-Star",
+      "slide3_highlight": "Service",
+      "slide3_subtitle": "Our dedicated team is at your disposal 24/7 to meet all your needs.",
+      "slide4_title": "Reserve Your",
+      "slide4_highlight": "Peaceful Moment",
+      "slide4_subtitle": "Take advantage of our exclusive offers and plan your ideal stay in a few clicks.",
+      "slide5_title": "Live a",
+      "slide5_highlight": "Unique Experience",
+      "slide5_subtitle": "Laundry, hair salon, room service — everything is designed for you.",
+
+      // ── Home page ──
       "featured_rooms": "Featured Rooms",
-      "services": "Our Services",
-      "laundry": "Laundry Service",
-      "laundry_desc": "Professional cleaning and pressing for your garments.",
-      "salon": "Hair & Beauty Salon",
-      "salon_desc": "Expert hairdressers and stylists at your service.",
-      "about_us_title": "About Motel Bethuli",
-      "about_us_desc": "A perfect blend of luxury, comfort, and exceptional service to make your stay unforgettable.",
-      "contact_us_title": "Get in Touch",
-      "send_message": "Send Message",
-      "quick_links": "Quick Links",
-      "contact_info": "Contact Info",
+      "featured_rooms_subtitle": "Discover our available rooms, designed for your comfort and well-being.",
+      "no_rooms": "No rooms available at the moment.",
+      "no_rooms_subtitle": "Come back soon to discover our offers.",
+      "view_all_rooms": "View all rooms",
+
+      // ── Why Choose Us ──
       "why_choose_us": "Why Choose Us",
       "why_desc": "Discover what makes Motel Bethuli the preferred choice for travelers.",
       "comfort": "Absolute Comfort",
@@ -37,9 +54,94 @@ const resources = {
       "location_desc": "Conveniently located near major attractions and business centers.",
       "support": "24/7 Support",
       "support_desc": "Our dedicated staff is always available to assist you.",
+
+      // ── CTA ──
       "cta_title": "Ready for an unforgettable experience?",
       "cta_desc": "Book your stay now and enjoy our exclusive offers.",
+
+      // ── Services ──
+      "services": "Our Services",
+      "services_subtitle": "We go beyond accommodation to offer you exceptional amenities.",
+      "laundry": "Laundry Service",
+      "laundry_desc": "Professional cleaning and pressing for your garments.",
+      "laundry_detail": "Travel light! Our fast and careful laundry service handles cleaning, washing and ironing of all your clothes so you always look impeccable.",
+      "salon": "Hair & Beauty Salon",
+      "salon_desc": "Expert hairdressers and stylists at your service.",
+      "salon_detail": "Take care of yourself without leaving the hotel. Our integrated hair salon offers cuts, hair treatments and beauty services by experienced professionals.",
+
+      // ── Testimonials ──
       "testimonials": "Guest Reviews",
+
+      // ── About ──
+      "about_us_title": "About Motel Bethuli",
+      "about_us_desc": "A perfect blend of luxury, comfort, and exceptional service to make your stay unforgettable.",
+      "about_intro1": "Welcome to Motel Bethuli, your oasis of peace in the heart of the city. We are committed to offering our guests an unforgettable stay combining modern comfort, elegance and impeccable service.",
+      "about_intro2": "Whether you are on a business trip or on vacation, our dedicated team ensures that each of your needs is met with professionalism and warmth.",
+      "feature_ac": "Air-conditioned and equipped rooms",
+      "feature_security": "24/7 Security",
+      "feature_room_service": "Room service",
+      "feature_wifi": "Free high-speed WiFi",
+      "our_values": "Our Values",
+      "value_excellence": "Excellence",
+      "value_excellence_desc": "We strive for excellence in every detail to guarantee you an impeccable stay.",
+      "value_hospitality": "Hospitality",
+      "value_hospitality_desc": "A warm and authentic welcome, because every guest is unique to us.",
+      "value_integrity": "Integrity",
+      "value_integrity_desc": "We act with transparency, honesty and deep respect for our visitors.",
+
+      // ── Contact ──
+      "contact_us_title": "Get in Touch",
+      "contact_subtitle": "Our team is available 24/7 to answer all your questions.",
+      "our_address": "Our Address",
+      "address_value": "PK12 Entrée Fokoua Michel",
+      "phone": "Phone",
+      "email": "Email",
+      "send_us_message": "Send Us a Message",
+      "full_name": "Full Name",
+      "full_name_placeholder": "Your name",
+      "email_placeholder": "your@email.com",
+      "subject": "Subject",
+      "subject_placeholder": "Subject of your message",
+      "message": "Message",
+      "message_placeholder": "How can we help you?",
+      "send_message": "Send Message",
+      "message_sent": "Message sent successfully!",
+
+      // ── Rooms page ──
+      "rooms_subtitle": "Explore our available rooms and book the one that suits your needs.",
+      "filters": "Filters",
+      "arrival_date": "Arrival Date",
+      "departure_date": "Departure Date",
+      "capacity": "Capacity",
+      "any_capacity": "Any",
+      "max_price": "Maximum Price",
+      "floor": "Floor",
+      "all_floors": "All floors",
+      "search_room_placeholder": "Search by room name...",
+      "loading_rooms": "Searching for the best rooms...",
+      "no_rooms_found": "No rooms found",
+      "no_rooms_found_desc": "Try adjusting your filters or dates.",
+      "reset_filters": "Reset filters",
+      "previous": "Previous",
+      "next": "Next",
+      "room_available": "Available",
+      "room_occupied": "Occupied",
+      "room_maintenance": "Maintenance",
+      "ground_floor": "Ground Floor",
+      "book_room": "Book",
+      "person": "person",
+      "persons": "persons",
+      "room": "room",
+      "rooms_count": "rooms",
+
+      // ── Footer ──
+      "quick_links": "Quick Links",
+      "contact_info": "Contact Info",
+      "copyright": "All rights reserved.",
+      "legal_notice": "Legal Notice",
+      "privacy_policy": "Privacy Policy",
+
+      // ── Auth ──
       "login_title": "Welcome Back",
       "login_subtitle": "Sign in to access your account and manage your reservations.",
       "email_address": "Email Address",
@@ -67,30 +169,47 @@ const resources = {
   },
   fr: {
     translation: {
+      // ── Nav ──
       "home": "Accueil",
       "rooms": "Chambres",
       "about": "À Propos",
       "contact": "Contact",
       "book_now": "Réserver",
+
+      // ── Hero / Search ──
       "search": "Vérifier la disponibilité",
       "check_in": "Date d'arrivée",
       "check_out": "Date de départ",
       "start_time": "Heure de début",
       "end_time": "Heure de fin",
-      "hero_title": "Bienvenue au Motel Bethuli",
-      "hero_subtitle": "Découvrez le confort et la tranquillité. Réservez votre chambre idéale dès aujourd'hui.",
+      "hero_title": "Bienvenue au",
+      "hero_title_highlight": "Motel Bethuli",
+
+      // ── Slides ──
+      "slide1_title": "Bienvenue au",
+      "slide1_highlight": "Motel Bethuli",
+      "slide1_subtitle": "Votre havre de paix au cœur de la ville. Un confort inégalé vous attend.",
+      "slide2_title": "Des Chambres",
+      "slide2_highlight": "Exceptionnelles",
+      "slide2_subtitle": "Chaque chambre est conçue pour vous offrir une expérience unique de confort et de luxe.",
+      "slide3_title": "Un Service",
+      "slide3_highlight": "5 Étoiles",
+      "slide3_subtitle": "Notre équipe dévouée est à votre disposition 24h/24 pour répondre à tous vos besoins.",
+      "slide4_title": "Réservez Votre",
+      "slide4_highlight": "Moment de Paix",
+      "slide4_subtitle": "Profitez de nos offres exclusives et planifiez votre séjour idéal en quelques clics.",
+      "slide5_title": "Vivez Une",
+      "slide5_highlight": "Expérience Unique",
+      "slide5_subtitle": "Blanchisserie, salon de coiffure, service en chambre — tout est pensé pour vous.",
+
+      // ── Home page ──
       "featured_rooms": "Chambres recommandées",
-      "services": "Nos Services",
-      "laundry": "Service de Blanchisserie",
-      "laundry_desc": "Nettoyage et repassage professionnel de vos vêtements.",
-      "salon": "Salon de Coiffure & Beauté",
-      "salon_desc": "Des coiffeurs et stylistes experts à votre service.",
-      "about_us_title": "À Propos du Motel Bethuli",
-      "about_us_desc": "Un mélange parfait de luxe, de confort et de service exceptionnel pour rendre votre séjour inoubliable.",
-      "contact_us_title": "Contactez-nous",
-      "send_message": "Envoyer le message",
-      "quick_links": "Liens Rapides",
-      "contact_info": "Coordonnées",
+      "featured_rooms_subtitle": "Découvrez nos chambres disponibles, conçues pour votre confort et votre bien-être.",
+      "no_rooms": "Aucune chambre disponible pour le moment.",
+      "no_rooms_subtitle": "Revenez bientôt pour découvrir nos offres.",
+      "view_all_rooms": "Voir toutes les chambres",
+
+      // ── Why Choose Us ──
       "why_choose_us": "Pourquoi nous choisir",
       "why_desc": "Découvrez ce qui fait du Motel Bethuli le choix préféré des voyageurs.",
       "comfort": "Confort Absolu",
@@ -99,9 +218,94 @@ const resources = {
       "location_desc": "Idéalement situé près des principales attractions et centres d'affaires.",
       "support": "Service 24/7",
       "support_desc": "Notre personnel dévoué est toujours disponible pour vous assister.",
+
+      // ── CTA ──
       "cta_title": "Prêt à vivre une expérience inoubliable ?",
       "cta_desc": "Réservez votre séjour dès maintenant et profitez de nos offres exclusives.",
+
+      // ── Services ──
+      "services": "Nos Services",
+      "services_subtitle": "Nous allons au-delà de l'hébergement pour vous offrir des commodités exceptionnelles.",
+      "laundry": "Service de Blanchisserie",
+      "laundry_desc": "Nettoyage et repassage professionnel de vos vêtements.",
+      "laundry_detail": "Voyagez léger ! Notre service de blanchisserie rapide et soigné prend en charge le nettoyage, le lavage et le repassage de tous vos vêtements pour que vous soyez toujours impeccable.",
+      "salon": "Salon de Coiffure & Beauté",
+      "salon_desc": "Des coiffeurs et stylistes experts à votre service.",
+      "salon_detail": "Prenez soin de vous sans quitter l'hôtel. Notre salon de coiffure intégré vous propose des coupes, soins capillaires et mises en beauté réalisés par des professionnels expérimentés.",
+
+      // ── Testimonials ──
       "testimonials": "Avis de nos clients",
+
+      // ── About ──
+      "about_us_title": "À Propos du Motel Bethuli",
+      "about_us_desc": "Un mélange parfait de luxe, de confort et de service exceptionnel pour rendre votre séjour inoubliable.",
+      "about_intro1": "Bienvenue au Motel Bethuli, votre oasis de paix au cœur de la ville. Nous nous engageons à offrir à nos clients un séjour inoubliable alliant confort moderne, élégance et un service irréprochable.",
+      "about_intro2": "Que vous soyez en voyage d'affaires ou en vacances, notre équipe dévouée veille à répondre à chacun de vos besoins avec professionnalisme et chaleur.",
+      "feature_ac": "Chambres climatisées et équipées",
+      "feature_security": "Sécurité 24/7",
+      "feature_room_service": "Service en chambre",
+      "feature_wifi": "Wifi haut débit gratuit",
+      "our_values": "Nos Valeurs",
+      "value_excellence": "Excellence",
+      "value_excellence_desc": "Nous visons l'excellence dans chaque détail pour vous garantir un séjour irréprochable.",
+      "value_hospitality": "Hospitalité",
+      "value_hospitality_desc": "Un accueil chaleureux et authentique, parce que chaque client est unique à nos yeux.",
+      "value_integrity": "Intégrité",
+      "value_integrity_desc": "Nous agissons avec transparence, honnêteté et un profond respect pour nos visiteurs.",
+
+      // ── Contact ──
+      "contact_us_title": "Contactez-nous",
+      "contact_subtitle": "Notre équipe est à votre disposition 24h/24 et 7j/7 pour répondre à toutes vos questions.",
+      "our_address": "Notre Adresse",
+      "address_value": "PK12 Entrée Fokoua Michel",
+      "phone": "Téléphone",
+      "email": "Email",
+      "send_us_message": "Envoyez-nous un message",
+      "full_name": "Nom complet",
+      "full_name_placeholder": "Votre nom",
+      "email_placeholder": "votre@email.com",
+      "subject": "Sujet",
+      "subject_placeholder": "Sujet de votre message",
+      "message": "Message",
+      "message_placeholder": "Comment pouvons-nous vous aider ?",
+      "send_message": "Envoyer le message",
+      "message_sent": "Message envoyé avec succès !",
+
+      // ── Rooms page ──
+      "rooms_subtitle": "Explorez nos chambres disponibles et réservez celle qui correspond à vos besoins.",
+      "filters": "Filtres",
+      "arrival_date": "Date d'arrivée",
+      "departure_date": "Date de départ",
+      "capacity": "Capacité",
+      "any_capacity": "Peu importe",
+      "max_price": "Prix maximum",
+      "floor": "Étage",
+      "all_floors": "Tous les étages",
+      "search_room_placeholder": "Rechercher par nom de chambre...",
+      "loading_rooms": "Recherche des meilleures chambres...",
+      "no_rooms_found": "Aucune chambre trouvée",
+      "no_rooms_found_desc": "Essayez de modifier vos filtres ou vos dates.",
+      "reset_filters": "Réinitialiser les filtres",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "room_available": "Disponible",
+      "room_occupied": "Occupée",
+      "room_maintenance": "Maintenance",
+      "ground_floor": "Rez-de-chaussée",
+      "book_room": "Réserver",
+      "person": "personne",
+      "persons": "personnes",
+      "room": "chambre",
+      "rooms_count": "chambres",
+
+      // ── Footer ──
+      "quick_links": "Liens Rapides",
+      "contact_info": "Coordonnées",
+      "copyright": "Tous droits réservés.",
+      "legal_notice": "Mentions légales",
+      "privacy_policy": "Politique de confidentialité",
+
+      // ── Auth ──
       "login_title": "Bienvenue",
       "login_subtitle": "Connectez-vous pour accéder à votre compte et gérer vos réservations.",
       "email_address": "Adresse e-mail",
@@ -136,7 +340,7 @@ i18n
     resources,
     fallbackLng: 'fr',
     interpolation: {
-      escapeValue: false, // not needed for react as it escapes by default
+      escapeValue: false,
     }
   });
 

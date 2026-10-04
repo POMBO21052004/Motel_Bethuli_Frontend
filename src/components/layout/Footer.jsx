@@ -32,9 +32,9 @@ const Footer = () => {
                 </svg>
               </a>
               <a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">
-                <span className="sr-only">Twitter</span>
+                <span className="sr-only">Twitter / X</span>
                 <svg fill="currentColor" viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-                  <path d="M13.6823 10.6218L20.2391 3H18.6854L12.9921 9.61788L8.44486 3H3.2002L10.0765 13.0074L3.2002 21H4.75404L10.7663 14.0113L15.5685 21H20.8131L13.6819 10.6218H13.6823ZM11.5541 13.0956L10.8574 12.0991L5.31391 4.16971H7.70053L12.1742 10.5689L12.8709 11.5655L18.6861 19.8835H16.2995L11.5541 13.096V13.0956Z" />
+                  <path d="M13.6823 10.6218L20.2391 3H18.6854L12.9921 9.61788L8.44486 3H3.2002L10.0765 13.0074L3.2002 21H4.75404L10.7663 14.0113L15.5685 21H20.8131L13.6819 10.6218H13.6823Z" />
                 </svg>
               </a>
             </div>
@@ -44,26 +44,10 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold text-slate-800 mb-4">{t('quick_links')}</h4>
             <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-gray-600 hover:text-amber-500 transition-colors">
-                  {t('home')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/rooms" className="text-gray-600 hover:text-amber-500 transition-colors">
-                  {t('rooms')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-gray-600 hover:text-amber-500 transition-colors">
-                  {t('about')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-gray-600 hover:text-amber-500 transition-colors">
-                  {t('contact')}
-                </Link>
-              </li>
+              <li><Link to="/" className="text-gray-600 hover:text-amber-500 transition-colors">{t('home')}</Link></li>
+              <li><Link to="/rooms" className="text-gray-600 hover:text-amber-500 transition-colors">{t('rooms')}</Link></li>
+              <li><Link to="/about" className="text-gray-600 hover:text-amber-500 transition-colors">{t('about')}</Link></li>
+              <li><Link to="/contact" className="text-gray-600 hover:text-amber-500 transition-colors">{t('contact')}</Link></li>
             </ul>
           </div>
 
@@ -73,7 +57,7 @@ const Footer = () => {
             <ul className="space-y-4">
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-amber-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600">123 Avenue de l'Hôtel, Quartier Résidentiel, Ville</span>
+                <span className="text-gray-600">{t('address_value')}</span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 text-amber-500 mr-3 flex-shrink-0" />
@@ -86,14 +70,14 @@ const Footer = () => {
             </ul>
           </div>
         </div>
-        
+
         <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-gray-500 mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} Motel Bethuli. Tous droits réservés.
+            © {new Date().getFullYear()} Motel Bethuli. {t('copyright')}
           </p>
           <div className="flex space-x-4 text-sm text-gray-500">
-            <a href="#" className="hover:text-amber-500">Mentions légales</a>
-            <a href="#" className="hover:text-amber-500">Politique de confidentialité</a>
+            <a href="#" className="hover:text-amber-500">{t('legal_notice')}</a>
+            <a href="#" className="hover:text-amber-500">{t('privacy_policy')}</a>
           </div>
         </div>
       </div>

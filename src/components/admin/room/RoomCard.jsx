@@ -13,9 +13,9 @@ const STATUS_CONFIG = {
 export default function RoomCard({ room, onDelete, isAdmin = true }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const imageUrl = room.primary_image 
+    const imageUrl = room.primary_image
         ? getImageUrl(room.primary_image.image_path)
-        : 'https://placehold.co/600x400/f8fafc/94a3b8?text=Pas+d%27image';
+        : null;
 
     const status = STATUS_CONFIG[room.status] || STATUS_CONFIG.available;
 
@@ -30,12 +30,19 @@ export default function RoomCard({ room, onDelete, isAdmin = true }) {
         >
             {/* Image zone */}
             <div className="relative h-56 shrink-0 overflow-hidden bg-slate-100">
-                <img 
-                    src={imageUrl} 
-                    alt={room.name} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                />
-                
+                {imageUrl ? (
+                    <img 
+                        src={imageUrl} 
+                        alt={room.name} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    />
+                ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-slate-50">
+                        <BedDouble className="w-12 h-12 text-slate-300" />
+                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Aucune image</span>
+                    </div>
+                )}
+
                 {/* TOP LEFT — Étage badge */}
                 <div className="absolute top-3 left-3">
                     <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md bg-white/90 text-amber-600">
@@ -62,7 +69,7 @@ export default function RoomCard({ room, onDelete, isAdmin = true }) {
                 )}
 
                 {/* Gradient overlay at bottom for readability */}
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+                {imageUrl && <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />}
             </div>
             
             {/* Content */}

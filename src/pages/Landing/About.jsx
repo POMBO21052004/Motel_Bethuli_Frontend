@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Shirt, Scissors, CheckCircle } from 'lucide-react';
+import aboutImg from '../../assets/about.png';
 
 const About = () => {
   const { t } = useTranslation();
@@ -34,8 +35,8 @@ const About = () => {
 
         <div className="mt-12 lg:mt-0">
           <div className="relative rounded-2xl overflow-hidden shadow-xl">
-            <img
-              src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+          <img
+              src={aboutImg}
               alt="Motel Bethuli — Chambre de luxe"
               className="w-full h-auto object-cover"
             />

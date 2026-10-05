@@ -41,7 +41,7 @@ const Home = () => {
           </h2>
           <div className="w-24 h-1 bg-amber-500 mx-auto mt-4 rounded-full"></div>
           <p className="mt-4 text-base text-gray-500 max-w-xl mx-auto">
-            Découvrez nos chambres disponibles, conçues pour votre confort et votre bien-être.
+            {t('featured_rooms_subtitle')}
           </p>
         </div>
 
@@ -52,8 +52,8 @@ const Home = () => {
         ) : rooms.length === 0 ? (
           <div className="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
             <BedDouble className="w-12 h-12 mx-auto text-amber-400 mb-4" />
-            <p className="text-slate-500 font-medium">Aucune chambre disponible pour le moment.</p>
-            <p className="text-sm text-slate-400 mt-1">Revenez bientôt pour découvrir nos offres.</p>
+            <p className="text-slate-500 font-medium">{t('no_rooms')}</p>
+            <p className="text-sm text-slate-400 mt-1">{t('no_rooms_subtitle')}</p>
           </div>
         ) : (
           <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -63,14 +63,14 @@ const Home = () => {
           </div>
         )}
 
-        {/* Voir toutes */}
+        {/* View all rooms */}
         {rooms.length > 0 && (
           <div className="text-center mt-10">
             <Link
               to="/rooms"
               className="inline-flex items-center gap-2 px-7 py-3 border-2 border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white rounded-xl font-bold text-sm transition-all"
             >
-              Voir toutes les chambres
+              {t('view_all_rooms')}
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>

@@ -214,7 +214,7 @@ export default function Rooms() {
             <div className="mb-10">
                 <h1 className="text-3xl font-serif font-extrabold text-slate-800">{t('rooms')}</h1>
                 <div className="w-16 h-1 bg-amber-500 rounded-full mt-2 mb-3"></div>
-                <p className="text-base text-slate-500 max-w-2xl">Explorez nos chambres disponibles et réservez celle qui correspond à vos besoins.</p>
+                <p className="text-base text-slate-500 max-w-2xl">{t('rooms_subtitle')}</p>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-6">
@@ -223,12 +223,12 @@ export default function Rooms() {
                     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm sticky top-24">
                         <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                             <SlidersHorizontal className="w-5 h-5 text-amber-500" />
-                            Filtres
+                            {t('filters')}
                         </h2>
-                        
+
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1.5">Date d'arrivée</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-1.5">{t('arrival_date')}</label>
                                 <input
                                     type="date"
                                     name="start_date"
@@ -239,7 +239,7 @@ export default function Rooms() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1.5">Date de départ</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-1.5">{t('departure_date')}</label>
                                 <input
                                     type="date"
                                     name="end_date"
@@ -250,21 +250,21 @@ export default function Rooms() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1.5">Capacité</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-1.5">{t('capacity')}</label>
                                 <select
                                     name="capacity"
                                     value={formFilters.capacity}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all cursor-pointer"
                                 >
-                                    <option value="">Peu importe</option>
+                                    <option value="">{t('any_capacity')}</option>
                                     {[1, 2, 3, 4, 5, 6].map(n => (
-                                        <option key={n} value={n}>{n} personne{n > 1 ? 's' : ''}</option>
+                                        <option key={n} value={n}>{n} {n > 1 ? t('persons') : t('person')}</option>
                                     ))}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1.5">Prix maximum</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-1.5">{t('max_price')}</label>
                                 <input
                                     type="number"
                                     name="max_price"
@@ -275,16 +275,16 @@ export default function Rooms() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1.5">Étage</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-1.5">{t('floor')}</label>
                                 <select
                                     name="floor"
                                     value={formFilters.floor}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all cursor-pointer"
                                 >
-                                    <option value="">Tous les étages</option>
+                                    <option value="">{t('all_floors')}</option>
                                     {[0, 1, 2, 3, 4, 5].map(n => (
-                                        <option key={n} value={n}>{n === 0 ? 'RDC' : `Étage ${n}`}</option>
+                                        <option key={n} value={n}>{n === 0 ? t('ground_floor') : `${t('floor')} ${n}`}</option>
                                     ))}
                                 </select>
                             </div>
@@ -298,7 +298,7 @@ export default function Rooms() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Rechercher par nom de chambre..."
+                            placeholder={t('search_room_placeholder')}
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-sm"
@@ -308,20 +308,20 @@ export default function Rooms() {
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-slate-100 shadow-sm">
                             <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-4" />
-                            <p className="text-sm font-medium text-slate-400">Recherche des meilleures chambres...</p>
+                            <p className="text-sm font-medium text-slate-400">{t('loading_rooms')}</p>
                         </div>
                     ) : filtered.length === 0 ? (
                         <div className="text-center py-24 bg-white rounded-2xl border border-dashed border-slate-200">
                             <BedDouble className="w-12 h-12 text-amber-200 mx-auto mb-4" />
-                            <h3 className="text-xl font-bold text-slate-800 mb-2">Aucune chambre trouvée</h3>
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">{t('no_rooms_found')}</h3>
                             <p className="text-sm text-slate-400 max-w-md mx-auto">
-                                Essayez de modifier vos filtres ou vos dates.
+                                {t('no_rooms_found_desc')}
                             </p>
                             <button
                                 onClick={() => { setSearchTerm(''); setFormFilters({start_date:'', end_date:'', capacity:'', max_price:'', floor:''}); setActiveFilters({}); }}
                                 className="mt-5 px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-bold transition-colors"
                             >
-                                Réinitialiser les filtres
+                                {t('reset_filters')}
                             </button>
                         </div>
                     ) : (
@@ -340,7 +340,7 @@ export default function Rooms() {
                                 onClick={() => setCurrentPage(p => p - 1)}
                                 className="flex items-center gap-1 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
                             >
-                                <ChevronLeft className="w-4 h-4" /> Précédent
+                                <ChevronLeft className="w-4 h-4" /> {t('previous')}
                             </button>
                             <span className="text-sm text-slate-500 font-medium">Page {currentPage} / {lastPage}</span>
                             <button
@@ -348,7 +348,7 @@ export default function Rooms() {
                                 onClick={() => setCurrentPage(p => p + 1)}
                                 className="flex items-center gap-1 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
                             >
-                                Suivant <ChevronRight className="w-4 h-4" />
+                                {t('next')} <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
                     )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Edit, Trash2, BedDouble, Users, MapPin, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { RoomModel } from '../../../models/RoomModel';
 import { getImageUrl } from '../../../utils/getImageUrl';
 
@@ -10,6 +11,7 @@ const STATUS_CONFIG = {
 };
 
 export default function RoomCard({ room, onDelete, isAdmin = true }) {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const imageUrl = room.primary_image 
         ? getImageUrl(room.primary_image.image_path)
@@ -88,7 +90,7 @@ export default function RoomCard({ room, onDelete, isAdmin = true }) {
                             <Link 
                                 to={`/admin/rooms/${room.id}`}
                                 className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 transition-colors"
-                                title="Voir les détails"
+                                title={t('view_details')}
                             >
                                 <ArrowRight size={16} />
                             </Link>
@@ -109,7 +111,7 @@ export default function RoomCard({ room, onDelete, isAdmin = true }) {
                         </div>
                     ) : (
                         <div className="font-black text-xs flex items-center gap-1 group/btn text-amber-500">
-                           Voir la chambre 
+                           {t('view_room')}
                            <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                         </div>
                     )}

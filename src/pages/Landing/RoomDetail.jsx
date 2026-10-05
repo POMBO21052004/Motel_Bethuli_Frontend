@@ -9,8 +9,10 @@ import roomService from '../../services/roomService';
 import { RoomModel } from '../../models/RoomModel';
 import { getImageUrl } from '../../utils/getImageUrl';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const RoomDetail = () => {
+    const { t } = useTranslation();
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -36,7 +38,7 @@ const RoomDetail = () => {
         if (!form.reservation_date || !form.end_date) { setAvailMsg(null); return; }
         if (form.end_date < form.reservation_date) { setAvailMsg(null); return; }
 
-        setAvailMsg({ type: 'checking', text: 'Vérification en cours...' });
+        setAvailMsg({ type: 'checking', text: t('checking_availability') });
         let cancelled = false;
 
         const timer = setTimeout(async () => {
@@ -60,7 +62,7 @@ const RoomDetail = () => {
         }, 500);
 
         return () => { cancelled = true; clearTimeout(timer); };
-    }, [id, form.reservation_date, form.end_date]);
+    }, [id, form.reservation_date, form.end_date, t]);
 
     useEffect(() => {
         const fetchRoom = async () => {
@@ -81,7 +83,7 @@ const RoomDetail = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <Loader2 className="w-10 h-10 animate-spin text-amber-500 mb-4" />
-                <p className="text-sm font-medium text-slate-400">Chargement de la chambre...</p>
+                <p className="text-sm font-medium text-slate-400">{t('loading_room')}</p>
             </div>
         );
     }
@@ -93,7 +95,7 @@ const RoomDetail = () => {
         ? room.images.map(img => getImageUrl(img.image_path))
         : [];
 
-    const floorLabel = Number(room.floor) === 0 ? 'Rez-de-chaussée' : `Étage ${room.floor}`;
+    const floorLabel = Number(room.floor) === 0 ? t('ground_floor') : `${t('floor')} ${room.floor}`;
 
     // ── WhatsApp message ──
     const buildWhatsAppMessage = () => {
@@ -112,7 +114,7 @@ const RoomDetail = () => {
         return encodeURIComponent(msg);
     };
 
-    const WHATSAPP_NUMBER = '237600000000'; // Define a fallback or use an env variable
+    const WHATSAPP_NUMBER = '237673445682';
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${buildWhatsAppMessage()}`;
 
     const handleBook = (e) => {
@@ -120,7 +122,6 @@ const RoomDetail = () => {
         if (!user) {
             setShowLoginPrompt(true);
         } else {
-            // Already logged in, redirect to the client's room show page where they can actually book
             navigate(`/client/rooms/${room.id}`);
         }
     };
@@ -132,19 +133,19 @@ const RoomDetail = () => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
                     <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95">
                         <Users className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                        <h3 className="text-xl font-black text-slate-900 mb-2">Connexion requise</h3>
+                        <h3 className="text-xl font-black text-slate-900 mb-2">{t('login_required')}</h3>
                         <p className="text-sm text-slate-500 mb-6">
-                            Vous devez être connecté à un compte client pour pouvoir réserver une chambre.
+                            {t('login_prompt')}
                         </p>
                         <div className="space-y-3">
                             <button onClick={() => navigate('/login')} className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors">
-                                Se connecter
+                                {t('login')}
                             </button>
                             <button onClick={() => navigate('/register')} className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors">
-                                Créer un compte
+                                {t('create_account')}
                             </button>
                             <button onClick={() => setShowLoginPrompt(false)} className="w-full py-3 text-slate-400 hover:text-slate-600 font-medium text-sm transition-colors mt-2">
-                                Annuler
+                                {t('cancel')}
                             </button>
                         </div>
                     </div>
@@ -157,7 +158,7 @@ const RoomDetail = () => {
                 className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-amber-600 transition-colors mb-6 group"
             >
                 <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                Retour aux chambres
+                {t('back_to_rooms')}
             </button>
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
@@ -232,16 +233,16 @@ const RoomDetail = () => {
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                         <h2 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
                             <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-                            Description
+                            {t('description')}
                         </h2>
                         <p className="text-slate-600 leading-relaxed text-sm">
-                            {room.description_fr || 'Aucune description disponible pour cette chambre.'}
+                            {room.description_fr || t('no_description')}
                         </p>
                     </div>
 
                     {/* Inclus */}
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                        <h2 className="text-lg font-bold text-slate-800 mb-4">Ce qui est inclus</h2>
+                        <h2 className="text-lg font-bold text-slate-800 mb-4">{t('included')}</h2>
                         {room.features && room.features.length > 0 ? (
                             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-600">
                                 {room.features.map(item => (
@@ -252,7 +253,7 @@ const RoomDetail = () => {
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-sm text-slate-500 italic">Aucun équipement spécifique renseigné pour cette chambre.</p>
+                            <p className="text-sm text-slate-500 italic">{t('no_features')}</p>
                         )}
                     </div>
                 </div>
@@ -276,11 +277,11 @@ const RoomDetail = () => {
                                 <span className="text-3xl font-black text-slate-900">
                                     {Number(room.price_per_day).toLocaleString('fr-FR')}
                                 </span>
-                                <span className="text-slate-400 text-sm font-medium">FCFA / nuit</span>
+                                <span className="text-slate-400 text-sm font-medium">{t('per_night')}</span>
                             </div>
                             {room.price_per_hour && (
                                 <p className="text-xs text-slate-400 mt-1">
-                                    Ou {Number(room.price_per_hour).toLocaleString('fr-FR')} FCFA / heure
+                                    {t('per_hour')} {Number(room.price_per_hour).toLocaleString('fr-FR')} {t('per_hour_suffix')}
                                 </p>
                             )}
                         </div>
@@ -290,30 +291,30 @@ const RoomDetail = () => {
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-500 flex items-center gap-2">
                                     <BedDouble className="w-4 h-4 text-amber-400" />
-                                    Type
+                                    {t('type')}
                                 </span>
-                                <span className="font-semibold text-slate-800">Chambre standard</span>
+                                <span className="font-semibold text-slate-800">{t('type_standard')}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-500 flex items-center gap-2">
                                     <Users className="w-4 h-4 text-amber-400" />
-                                    Capacité
+                                    {t('capacity')}
                                 </span>
                                 <span className="font-semibold text-slate-800">
-                                    {room.capacity} personne{room.capacity > 1 ? 's' : ''}
+                                    {room.capacity} {room.capacity > 1 ? t('persons') : t('person')}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-500 flex items-center gap-2">
                                     <MapPin className="w-4 h-4 text-amber-400" />
-                                    Étage
+                                    {t('floor')}
                                 </span>
                                 <span className="font-semibold text-slate-800">{floorLabel}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-500 flex items-center gap-2">
                                     <CalendarDays className="w-4 h-4 text-amber-400" />
-                                    Disponibilité
+                                    {t('availability')}
                                 </span>
                                 <span className={`font-semibold ${room.status === 'available' ? 'text-emerald-600' : 'text-rose-500'}`}>
                                     {RoomModel.getStatusLabel(room.status)}
@@ -327,7 +328,7 @@ const RoomDetail = () => {
                                 <form onSubmit={handleBook} className="space-y-3">
                                     <div className="grid grid-cols-2 gap-2">
                                         <div>
-                                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Arrivée</label>
+                                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">{t('arrival')}</label>
                                             <input
                                                 type="date"
                                                 min={today}
@@ -346,7 +347,7 @@ const RoomDetail = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Départ</label>
+                                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">{t('departure')}</label>
                                             <input
                                                 type="date"
                                                 min={getNextDay(form.reservation_date)}
@@ -372,7 +373,7 @@ const RoomDetail = () => {
                                                 <p>{availMsg.text}</p>
                                                 {availMsg.type === 'success' && availMsg.price && (
                                                     <p className="mt-0.5 font-black text-emerald-800">
-                                                        {availMsg.days} nuit{availMsg.days > 1 ? 's' : ''} · {Number(availMsg.price).toLocaleString('fr-FR')} FCFA
+                                                        {availMsg.days} {availMsg.days > 1 ? t('nuit_pluriel') || 'nuits' : t('nuit_singulier') || 'nuit'} · {Number(availMsg.price).toLocaleString('fr-FR')} FCFA
                                                     </p>
                                                 )}
                                             </div>
@@ -384,13 +385,13 @@ const RoomDetail = () => {
                                         disabled={availMsg?.type === 'error' || availMsg?.type === 'checking'}
                                         className="flex items-center justify-center gap-2 w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-black text-sm shadow-lg shadow-amber-500/20 hover:-translate-y-0.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0"
                                     >
-                                        <BedDouble className="w-5 h-5" /> Vérifier &amp; Réserver
+                                        <BedDouble className="w-5 h-5" /> {t('check_book')}
                                     </button>
                                 </form>
                             ) : (
                                 <div className="flex items-center gap-2 p-4 bg-rose-50 text-rose-600 rounded-xl text-sm font-medium border border-rose-100">
                                     <AlertTriangle className="w-4 h-4 shrink-0" />
-                                    Cette chambre n'est pas disponible actuellement.
+                                    {t('room_not_available')}
                                 </div>
                             )}
 
@@ -398,7 +399,7 @@ const RoomDetail = () => {
                                 to="/rooms"
                                 className="flex items-center justify-center gap-2 w-full py-3 border-2 border-slate-200 hover:border-amber-400 text-slate-600 hover:text-amber-600 rounded-xl font-semibold text-sm transition-all"
                             >
-                                Voir d'autres chambres
+                                {t('see_other_rooms')}
                             </Link>
                         </div>
                     </div>

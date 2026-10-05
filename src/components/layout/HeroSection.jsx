@@ -114,7 +114,7 @@ const HeroSection = () => {
           <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors duration-300">
             <Calendar className="h-5 w-5 text-amber-500 flex-shrink-0" />
             <div className="flex flex-col w-full text-left">
-              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Arrivée</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">{t('arrival')}</span>
               <input
                 type="date"
                 required
@@ -128,7 +128,7 @@ const HeroSection = () => {
           <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors duration-300">
             <Calendar className="h-5 w-5 text-amber-500 flex-shrink-0" />
             <div className="flex flex-col w-full text-left">
-              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Départ</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">{t('departure')}</span>
               <input
                 type="date"
                 required

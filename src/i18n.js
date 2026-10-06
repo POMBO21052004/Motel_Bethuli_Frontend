@@ -43,6 +43,8 @@ const resources = {
       "per_hour_suffix": "FCFA / hour",
       "type": "Type",
       "availability": "Availability",
+      "nuit_singulier": "night",
+      "nuit_pluriel": "nights",
       "hero_title": "Welcome to",
       "hero_title_highlight": "Motel Bethuli",
 
@@ -232,6 +234,8 @@ const resources = {
       "per_hour_suffix": "FCFA / heure",
       "type": "Type",
       "availability": "Disponibilité",
+      "nuit_singulier": "nuit",
+      "nuit_pluriel": "nuits",
       "hero_title": "Bienvenue au",
       "hero_title_highlight": "Motel Bethuli",
 

@@ -373,7 +373,7 @@ const RoomDetail = () => {
                                                 <p>{availMsg.text}</p>
                                                 {availMsg.type === 'success' && availMsg.price && (
                                                     <p className="mt-0.5 font-black text-emerald-800">
-                                                        {availMsg.days} {availMsg.days > 1 ? t('nuit_pluriel') || 'nuits' : t('nuit_singulier') || 'nuit'} · {Number(availMsg.price).toLocaleString('fr-FR')} FCFA
+                                                        {availMsg.days} {availMsg.days > 1 ? t('nuit_pluriel') : t('nuit_singulier')} · {Number(availMsg.price).toLocaleString('fr-FR')} FCFA
                                                     </p>
                                                 )}
                                             </div>

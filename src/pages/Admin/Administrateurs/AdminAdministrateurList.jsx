@@ -140,7 +140,7 @@ export default function AdminAdministrateurList() {
         <div className="space-y-6 animate-in fade-in duration-700" style={{ color: T.onSurface }}>
             {/* ── Breadcrumb ─────────────────────────────────── */}
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: T.outline }}>
-                <span className="hover:underline cursor-pointer transition-colors" onClick={() => navigate('/admin')}>Dashboard</span>
+                <span className="hover:underline cursor-pointer transition-colors" onClick={() => navigate('/admin/dashboard')}>Dashboard</span>
                 <ArrowRight className="w-3 h-3" />
                 <span style={{ color: T.primary }}>Gestion des Administrateurs</span>
             </div>
@@ -168,7 +168,7 @@ export default function AdminAdministrateurList() {
                         </div>
                         <p className="text-sm leading-relaxed" style={{ color: '#94a3b8' }}>
                             Gérez les accès à l'interface d'administration.
-                            Créez des profils, assignez des rôles (Admin/SuperAdmin) et contrôlez les privilèges.
+                            Créez des profils, assignez des rôles et contrôlez les privilèges.
                         </p>
                     </div>
 
@@ -176,8 +176,7 @@ export default function AdminAdministrateurList() {
                     <div className="flex items-center gap-4 p-4 rounded-xl border backdrop-blur-sm flex-shrink-0" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)' }}>
                         {[
                             { label: 'Total', value: stats?.total ?? administrateurs.length, color: '#f8fafc' },
-                            { label: 'Actifs', value: stats?.actifs ?? administrateurs.filter(c => c.actif).length, color: '#4ade80' },
-                            { label: 'SuperAdmins', value: stats?.superadmins ?? administrateurs.filter(c => c.role === 'SuperAdmin').length, color: '#60a5fa' },
+                            { label: 'Actifs', value: stats?.actifs ?? administrateurs.filter(c => c.actif).length, color: '#4ade80' }
                         ].map((s, i) => (
                             <React.Fragment key={s.label}>
                                 {i > 0 && <div className="w-px h-10 opacity-20 bg-white" />}

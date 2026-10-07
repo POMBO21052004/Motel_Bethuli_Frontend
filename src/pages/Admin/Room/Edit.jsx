@@ -225,7 +225,7 @@ const T = {
         <div className="space-y-6 animate-in fade-in duration-700" style={{ color: T.onSurface }}>
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: T.outline }}>
-                <span className="hover:underline cursor-pointer transition-colors" onClick={() => navigate('/admin')}>Dashboard</span>
+                <span className="hover:underline cursor-pointer transition-colors" onClick={() => navigate('/admin/dashboard')}>Dashboard</span>
                 <ArrowLeft className="w-3 h-3 mx-1" />
                 <span className="hover:underline cursor-pointer transition-colors" onClick={() => navigate('/admin/rooms')}>Chambres</span>
                 <ArrowLeft className="w-3 h-3 mx-1" />

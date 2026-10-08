@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Loader2, BedDouble, AlertCircle, ArrowRight, X, RefreshCw, Trash2, CheckCircle, ShieldAlert } from 'lucide-react';
+import { Plus, Search, Filter, Loader2, BedDouble, AlertCircle, ArrowRight, X, RefreshCw, Trash2, CheckCircle, ShieldAlert, SlidersHorizontal, CalendarDays, ChevronDown, ChevronUp } from 'lucide-react';
 import { useRooms } from '../../../hooks/useRooms';
 import RoomCard from '../../../components/admin/room/RoomCard';
 import { RoomStatus } from '../../../models/RoomModel';
@@ -51,16 +51,74 @@ function PasswordModal({ isOpen, onClose, onConfirm, title, message, type = 'dan
 export default function RoomIndex() {
     const navigate = useNavigate();
     const { rooms, stats, loading, error, fetchRooms, deleteRoom } = useRooms();
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm]   = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [advancedFilters, setAdvancedFilters] = useState({
+        start_date: '',
+        end_date: '',
+        capacity: '',
+        max_price: '',
+        floor: '',
+    });
+    const [activeAdvanced, setActiveAdvanced] = useState({});
+
     const [modalConfig, setModalConfig] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
 
+    const getNextDay = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split('T')[0];
+    };
+
+    const handleAdvancedChange = (e) => {
+        const { name, value } = e.target;
+        setAdvancedFilters(prev => {
+            const next = { ...prev, [name]: value };
+            if (name === 'start_date' && value) {
+                const minEnd = getNextDay(value);
+                if (!next.end_date || next.end_date <= value) next.end_date = minEnd;
+            }
+            return next;
+        });
+    };
+
+    const applyAdvanced = () => {
+        setActiveAdvanced({ ...advancedFilters });
+    };
+
+    const clearAdvanced = () => {
+        const empty = { start_date: '', end_date: '', capacity: '', max_price: '', floor: '' };
+        setAdvancedFilters(empty);
+        setActiveAdvanced({});
+    };
+
+    const hasActiveAdvanced = Object.values(activeAdvanced).some(v => v !== '');
+
     useEffect(() => {
-        const t = setTimeout(() => fetchRooms({ search: searchTerm, status: statusFilter }), 400);
+        const params = { search: searchTerm, status: statusFilter };
+        if (activeAdvanced.start_date) params.start_date = activeAdvanced.start_date;
+        if (activeAdvanced.end_date)   params.end_date   = activeAdvanced.end_date;
+        const t = setTimeout(() => fetchRooms(params), 400);
         return () => clearTimeout(t);
-    }, [fetchRooms, searchTerm, statusFilter]);
+    }, [fetchRooms, searchTerm, statusFilter, activeAdvanced]);
+
+    // Compute disabledReason for each room based on active advanced filters
+    const roomsWithOverlay = rooms.map(room => {
+        let disabledReason = null;
+        if (room.is_occupied_for_dates) {
+            disabledReason = "Occupée pour cette période";
+        } else if (activeAdvanced.floor && parseInt(room.floor) !== parseInt(activeAdvanced.floor)) {
+            disabledReason = "Indisponible (Étage)";
+        } else if (activeAdvanced.capacity && parseInt(room.capacity) < parseInt(activeAdvanced.capacity)) {
+            disabledReason = "Indisponible (Capacité)";
+        } else if (activeAdvanced.max_price && parseFloat(room.price_per_day) > parseFloat(activeAdvanced.max_price)) {
+            disabledReason = "Indisponible (Budget)";
+        }
+        return { ...room, disabledReason };
+    });
 
     const openModal = (config) => setModalConfig(config);
     const closeModal = () => setModalConfig(null);
@@ -138,44 +196,156 @@ export default function RoomIndex() {
             </div>
 
             {/* Search + Actions */}
-            <div className="bg-white rounded-2xl border shadow-sm p-4 flex flex-col lg:flex-row items-center gap-4" style={{ borderColor: `${T.outlineVariant}50` }}>
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: T.outline }} />
-                    <input type="text" placeholder="Rechercher par nom, description..."
-                        value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-11 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all"
-                        style={{ background: T.bg, color: T.onSurface }} />
-                </div>
-                <div className="flex items-center gap-3 w-full lg:w-auto">
-                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl flex-1 lg:flex-none" style={{ background: T.bg }}>
-                        <Filter className="w-4 h-4 flex-shrink-0" style={{ color: T.outline }} />
-                        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-                            className="bg-transparent border-none text-sm font-semibold focus:ring-0 cursor-pointer outline-none"
-                            style={{ color: T.onSurface }}>
-                            <option value="all">Toutes les chambres</option>
-                            <option value={RoomStatus.AVAILABLE}>Disponibles</option>
-                            <option value={RoomStatus.MAINTENANCE}>En Maintenance</option>
-                        </select>
+            <div className="bg-white rounded-2xl border shadow-sm" style={{ borderColor: `${T.outlineVariant}50` }}>
+                {/* Top bar */}
+                <div className="p-4 flex flex-col lg:flex-row items-center gap-4">
+                    <div className="relative flex-1 w-full">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: T.outline }} />
+                        <input type="text" placeholder="Rechercher par nom, description..."
+                            value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                            className="w-full pl-11 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all"
+                            style={{ background: T.bg, color: T.onSurface }} />
                     </div>
-                    {(searchTerm || statusFilter !== 'all') && (
-                        <button onClick={() => { setSearchTerm(''); setStatusFilter('all'); }}
-                            className="p-2.5 rounded-xl transition-colors hover:bg-red-50 hover:text-red-500"
-                            style={{ color: T.outline }}>
-                            <X className="w-4 h-4" />
+                    <div className="flex items-center gap-3 w-full lg:w-auto">
+                        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl flex-1 lg:flex-none" style={{ background: T.bg }}>
+                            <Filter className="w-4 h-4 flex-shrink-0" style={{ color: T.outline }} />
+                            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+                                className="bg-transparent border-none text-sm font-semibold focus:ring-0 cursor-pointer outline-none"
+                                style={{ color: T.onSurface }}>
+                                <option value="all">Toutes les chambres</option>
+                                <option value={RoomStatus.AVAILABLE}>Disponibles</option>
+                                <option value={RoomStatus.MAINTENANCE}>En Maintenance</option>
+                            </select>
+                        </div>
+
+                        {/* Advanced filters toggle */}
+                        <button
+                            onClick={() => setShowAdvanced(v => !v)}
+                            title="Filtres avancés"
+                            className={`relative p-2.5 rounded-xl transition-colors border ${showAdvanced ? 'border-amber-400 bg-amber-50 text-amber-600' : 'border-transparent hover:bg-gray-100'}`}
+                            style={{ color: showAdvanced ? T.primary : T.outline }}
+                        >
+                            <SlidersHorizontal className="w-4 h-4" />
+                            {hasActiveAdvanced && (
+                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 border-2 border-white" />
+                            )}
                         </button>
-                    )}
-                    <button onClick={() => fetchRooms({ search: searchTerm, status: statusFilter })} title="Actualiser"
-                        className="p-2.5 rounded-xl transition-colors hover:bg-gray-100" style={{ color: T.outline }}>
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
-                    <button onClick={() => navigate('/admin/rooms/create')}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white shadow-lg hover:opacity-90 active:scale-95 transition-all flex-shrink-0"
-                        style={{ background: T.primary }}>
-                        <Plus className="w-4 h-4" />
-                        <span className="hidden sm:inline">Nouvelle Chambre</span>
-                    </button>
+
+                        {(searchTerm || statusFilter !== 'all') && (
+                            <button onClick={() => { setSearchTerm(''); setStatusFilter('all'); }}
+                                className="p-2.5 rounded-xl transition-colors hover:bg-red-50 hover:text-red-500"
+                                style={{ color: T.outline }}>
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                        <button onClick={() => { const params = { search: searchTerm, status: statusFilter }; if (activeAdvanced.start_date) params.start_date = activeAdvanced.start_date; if (activeAdvanced.end_date) params.end_date = activeAdvanced.end_date; fetchRooms(params); }} title="Actualiser"
+                            className="p-2.5 rounded-xl transition-colors hover:bg-gray-100" style={{ color: T.outline }}>
+                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                        </button>
+                        <button onClick={() => navigate('/admin/rooms/create')}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white shadow-lg hover:opacity-90 active:scale-95 transition-all flex-shrink-0"
+                            style={{ background: T.primary }}>
+                            <Plus className="w-4 h-4" />
+                            <span className="hidden sm:inline">Nouvelle Chambre</span>
+                        </button>
+                    </div>
                 </div>
+
+                {/* Advanced filter panel */}
+                {showAdvanced && (
+                    <div className="border-t px-4 pb-4 pt-4" style={{ borderColor: `${T.outlineVariant}40`, background: '#fafafa' }}>
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="text-xs font-black uppercase tracking-widest flex items-center gap-2" style={{ color: T.outline }}>
+                                <CalendarDays className="w-3.5 h-3.5" /> Filtres de disponibilité
+                            </p>
+                            {hasActiveAdvanced && (
+                                <button onClick={clearAdvanced} className="text-xs font-bold text-red-400 hover:text-red-600 flex items-center gap-1">
+                                    <X className="w-3 h-3" /> Réinitialiser
+                                </button>
+                            )}
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            {/* Date d'arrivée */}
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-wider mb-1.5" style={{ color: T.outline }}>Date d'arrivée</label>
+                                <input
+                                    type="date"
+                                    name="start_date"
+                                    value={advancedFilters.start_date}
+                                    onChange={handleAdvancedChange}
+                                    className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:ring-1 focus:ring-amber-400"
+                                    style={{ borderColor: T.outlineVariant, color: T.onSurface, background: '#fff' }}
+                                />
+                            </div>
+                            {/* Date de départ */}
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-wider mb-1.5" style={{ color: T.outline }}>Date de départ</label>
+                                <input
+                                    type="date"
+                                    name="end_date"
+                                    value={advancedFilters.end_date}
+                                    min={advancedFilters.start_date || undefined}
+                                    onChange={handleAdvancedChange}
+                                    className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:ring-1 focus:ring-amber-400"
+                                    style={{ borderColor: T.outlineVariant, color: T.onSurface, background: '#fff' }}
+                                />
+                            </div>
+                            {/* Capacité */}
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-wider mb-1.5" style={{ color: T.outline }}>Capacité</label>
+                                <select
+                                    name="capacity"
+                                    value={advancedFilters.capacity}
+                                    onChange={handleAdvancedChange}
+                                    className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer"
+                                    style={{ borderColor: T.outlineVariant, color: T.onSurface, background: '#fff' }}
+                                >
+                                    <option value="">Peu importe</option>
+                                    {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n} personne{n > 1 ? 's' : ''}</option>)}
+                                </select>
+                            </div>
+                            {/* Prix maximum */}
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-wider mb-1.5" style={{ color: T.outline }}>Prix maximum</label>
+                                <input
+                                    type="number"
+                                    name="max_price"
+                                    value={advancedFilters.max_price}
+                                    onChange={handleAdvancedChange}
+                                    placeholder="Ex: 50000"
+                                    className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:ring-1 focus:ring-amber-400"
+                                    style={{ borderColor: T.outlineVariant, color: T.onSurface, background: '#fff' }}
+                                />
+                            </div>
+                            {/* Étage */}
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-wider mb-1.5" style={{ color: T.outline }}>Étage</label>
+                                <select
+                                    name="floor"
+                                    value={advancedFilters.floor}
+                                    onChange={handleAdvancedChange}
+                                    className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer"
+                                    style={{ borderColor: T.outlineVariant, color: T.onSurface, background: '#fff' }}
+                                >
+                                    <option value="">Tous les étages</option>
+                                    <option value="0">Rez-de-chaussée</option>
+                                    {[1,2,3,4,5].map(n => <option key={n} value={n}>Étage {n}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex justify-end mt-3">
+                            <button
+                                onClick={applyAdvanced}
+                                className="px-5 py-2 rounded-xl text-sm font-bold text-white shadow-sm hover:opacity-90 transition-opacity"
+                                style={{ background: T.primary }}
+                            >
+                                Appliquer les filtres
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
+
 
             {/* Content */}
             {error ? (
@@ -183,15 +353,15 @@ export default function RoomIndex() {
                     <AlertCircle className="w-5 h-5 shrink-0" />
                     <p className="text-sm font-medium">{error}</p>
                 </div>
-            ) : loading && rooms.length === 0 ? (
+            ) : loading && roomsWithOverlay.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-amber-500">
                     <Loader2 className="w-8 h-8 animate-spin mb-4" />
                     <p className="text-sm font-bold text-slate-500">Chargement des chambres...</p>
                 </div>
-            ) : rooms.length > 0 ? (
+            ) : roomsWithOverlay.length > 0 ? (
                 (() => {
                     // Group rooms by floor, sorted numerically
-                    const grouped = rooms.reduce((acc, room) => {
+                    const grouped = roomsWithOverlay.reduce((acc, room) => {
                         const f = room.floor ?? 0;
                         if (!acc[f]) acc[f] = [];
                         acc[f].push(room);

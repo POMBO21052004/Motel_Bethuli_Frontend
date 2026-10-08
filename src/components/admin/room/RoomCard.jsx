@@ -18,6 +18,7 @@ export default function RoomCard({ room, onDelete, isAdmin = true }) {
         : null;
 
     const status = STATUS_CONFIG[room.status] || STATUS_CONFIG.available;
+    const disabled = !!room.disabledReason;
 
     const handleNavigate = () => {
         if (!isAdmin) navigate(`/rooms/${room.id}`);
@@ -26,7 +27,7 @@ export default function RoomCard({ room, onDelete, isAdmin = true }) {
     return (
         <div 
             onClick={handleNavigate}
-            className={`group bg-white rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-slate-200 transition-all duration-300 hover:-translate-y-1.5 flex flex-col h-full ${!isAdmin ? 'cursor-pointer' : ''}`}
+            className={`relative group bg-white rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-slate-200 transition-all duration-300 hover:-translate-y-1.5 flex flex-col h-full ${!isAdmin ? 'cursor-pointer' : ''}`}
         >
             {/* Image zone */}
             <div className="relative h-56 shrink-0 overflow-hidden bg-slate-100">
@@ -124,6 +125,18 @@ export default function RoomCard({ room, onDelete, isAdmin = true }) {
                     )}
                 </div>
             </div>
+
+            {/* OVERLAY BANNER when disabled */}
+            {disabled && (
+                <div className="absolute inset-0 z-10 overflow-hidden pointer-events-none" style={{ backdropFilter: 'blur(1px)', background: 'rgba(255,255,255,0.15)' }}>
+                    <div className={`absolute inset-0 opacity-30 ${room.disabledReason === "Occupée pour cette période" ? 'bg-rose-100' : 'bg-slate-100'}`} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className={`text-white font-black text-[11px] uppercase tracking-[0.2em] py-2 px-12 -rotate-45 shadow-2xl transform origin-center whitespace-nowrap min-w-[200%] text-center border-y border-white/20 ${room.disabledReason === "Occupée pour cette période" ? 'bg-rose-500/90' : 'bg-slate-700/90'}`}>
+                            {room.disabledReason}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

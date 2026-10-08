@@ -13,81 +13,93 @@ function RoomCard({ room }) {
         ? getImageUrl(room.primary_image.image_path)
         : null;
     const isMaintenance = room.status?.value === 'maintenance' || room.status === 'maintenance';
+    const disabled = !!room.disabledReason;
 
     return (
         <Link
             to={`/client/rooms/${room.id}`}
-            className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full"
+            className="group relative bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full"
         >
-            {/* Image */}
-            <div className="relative h-44 shrink-0 overflow-hidden bg-slate-100">
-                {imageUrl ? (
-                    <img
-                        src={imageUrl}
-                        alt={room.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <BedDouble className="w-12 h-12 text-slate-300" />
-                    </div>
-                )}
-
-                {/* Étage */}
-                <div className="absolute top-3 left-3">
-                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md bg-white/90 text-amber-600">
-                        {room.floor === 0 ? 'RDC' : `Étage ${room.floor}`}
-                    </span>
-                </div>
-
-                {/* Prix */}
-                <div className="absolute top-2 right-2">
-                    <div className="flex items-baseline gap-0.5 bg-amber-500 text-white px-2.5 py-1 rounded-t-lg rounded-br-lg rounded-bl-sm shadow-sm">
-                        <span className="text-[13px] font-black">{Number(room.price_per_day).toLocaleString('fr-FR')}</span>
-                        <span className="text-[9px] font-bold opacity-80">FCFA</span>
-                    </div>
-                </div>
-
-                {/* Status */}
-                <div className="absolute bottom-3 left-3">
-                    {isMaintenance ? (
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-800/90 text-white backdrop-blur-md shadow-sm">
-                            <Wrench className="w-3 h-3" /> Maintenance
-                        </span>
-                    ) : room.is_occupied_now ? (
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-500/90 text-white backdrop-blur-md shadow-sm">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Occupée
-                        </span>
+            <div className={`flex flex-col h-full transition-all duration-300 ${disabled ? 'opacity-40 blur-[1px]' : ''}`}>
+                {/* Image */}
+                <div className="relative h-44 shrink-0 overflow-hidden bg-slate-100">
+                    {imageUrl ? (
+                        <img
+                            src={imageUrl}
+                            alt={room.name}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
                     ) : (
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/90 text-white backdrop-blur-md shadow-sm">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white" /> Disponible
-                        </span>
+                        <div className="w-full h-full flex items-center justify-center">
+                            <BedDouble className="w-12 h-12 text-slate-300" />
+                        </div>
                     )}
+
+                    {/* Étage */}
+                    <div className="absolute top-3 left-3">
+                        <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md bg-white/90 text-amber-600">
+                            {room.floor === 0 ? 'RDC' : `Étage ${room.floor}`}
+                        </span>
+                    </div>
+
+                    {/* Prix */}
+                    <div className="absolute top-2 right-2">
+                        <div className="flex items-baseline gap-0.5 bg-amber-500 text-white px-2.5 py-1 rounded-t-lg rounded-br-lg rounded-bl-sm shadow-sm">
+                            <span className="text-[13px] font-black">{Number(room.price_per_day).toLocaleString('fr-FR')}</span>
+                            <span className="text-[9px] font-bold opacity-80">FCFA</span>
+                        </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className="absolute bottom-3 left-3">
+                        {isMaintenance ? (
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-800/90 text-white backdrop-blur-md shadow-sm">
+                                <Wrench className="w-3 h-3" /> Maintenance
+                            </span>
+                        ) : room.is_occupied_now ? (
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-500/90 text-white backdrop-blur-md shadow-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Occupée
+                            </span>
+                        ) : (
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/90 text-white backdrop-blur-md shadow-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-white" /> Disponible
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                 </div>
 
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-            </div>
-
-            {/* Content */}
-            <div className="p-4 flex flex-col flex-1">
-                <h4 className="text-base font-bold text-slate-900 leading-tight line-clamp-1 group-hover:text-amber-500 transition-colors mb-1">
-                    {room.name}
-                </h4>
-                <p className="text-amber-500 text-xs font-bold flex items-center gap-0.5 mb-2">
-                    <MapPin className="w-3.5 h-3.5" /> Motel Bethuli
-                </p>
-                <p className="text-slate-500 text-[12px] leading-relaxed line-clamp-2 flex-1">
-                    {room.description_fr || 'Une chambre confortable au Motel Bethuli.'}
-                </p>
-                <div className="mt-3 pt-3 flex justify-between items-center border-t border-slate-50">
-                    <span className="flex items-center gap-1 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
-                        <Users className="w-3 h-3" /> {room.capacity} Pers.
-                    </span>
-                    <span className="text-xs font-black text-amber-500 flex items-center gap-1 group-hover:gap-2 transition-all">
-                        Réserver <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
-                    </span>
+                {/* Content */}
+                <div className="p-4 flex flex-col flex-1">
+                    <h4 className="text-base font-bold text-slate-900 leading-tight line-clamp-1 group-hover:text-amber-500 transition-colors mb-1">
+                        {room.name}
+                    </h4>
+                    <p className="text-amber-500 text-xs font-bold flex items-center gap-0.5 mb-2">
+                        <MapPin className="w-3.5 h-3.5" /> Motel Bethuli
+                    </p>
+                    <p className="text-slate-500 text-[12px] leading-relaxed line-clamp-2 flex-1">
+                        {room.description_fr || 'Une chambre confortable au Motel Bethuli.'}
+                    </p>
+                    <div className="mt-3 pt-3 flex justify-between items-center border-t border-slate-50">
+                        <span className="flex items-center gap-1 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                            <Users className="w-3 h-3" /> {room.capacity} Pers.
+                        </span>
+                        <span className="text-xs font-black text-amber-500 flex items-center gap-1 group-hover:gap-2 transition-all">
+                            Réserver <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </div>
                 </div>
             </div>
+
+            {/* OVERLAY BANNER */}
+            {disabled && (
+                <div className="absolute inset-0 flex items-center justify-center z-10 overflow-hidden pointer-events-none">
+                    <div className={`text-white font-black text-[11px] uppercase tracking-[0.2em] py-2 px-12 -rotate-45 shadow-2xl backdrop-blur-md transform origin-center whitespace-nowrap min-w-[150%] text-center border-y border-white/20 ${room.disabledReason === "Occupée pour cette période" ? 'bg-rose-500/90' : 'bg-slate-900/90'}`}>
+                        {room.disabledReason}
+                    </div>
+                </div>
+            )}
         </Link>
     );
 }
@@ -186,7 +198,21 @@ export default function ClientRooms() {
     const filtered = rooms.filter(room =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (room.description_fr || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    ).map(room => {
+        let disabledReason = null;
+        if (room.is_occupied_for_dates) {
+            disabledReason = "Occupée pour cette période";
+        } else if (activeFilters.floor && parseInt(room.floor) !== parseInt(activeFilters.floor)) {
+            disabledReason = "Indisponible (Étage)";
+        } else if (activeFilters.capacity && parseInt(room.capacity) < parseInt(activeFilters.capacity)) {
+            disabledReason = "Indisponible (Capacité)";
+        } else if (activeFilters.max_price && parseFloat(room.price_per_day) > parseFloat(activeFilters.max_price)) {
+            disabledReason = "Indisponible (Budget)";
+        } else if (activeFilters.min_price && parseFloat(room.price_per_day) < parseFloat(activeFilters.min_price)) {
+            disabledReason = "Indisponible (Budget)";
+        }
+        return { ...room, disabledReason };
+    });
 
     // Grouper par étage
     const grouped = filtered.reduce((acc, room) => {

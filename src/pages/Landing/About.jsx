@@ -8,9 +8,9 @@ const About = () => {
 
   const features = [
     t('feature_ac'),
-    t('feature_security'),
-    t('feature_room_service'),
-    t('feature_wifi'),
+    t('feature_events'),
+    t('feature_catering'),
+    t('feature_parking'),
   ];
 
   return (
